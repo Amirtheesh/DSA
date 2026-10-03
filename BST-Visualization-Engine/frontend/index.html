@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO -->
+    <title>Binary Search Tree Analysis & Visualization Engine</title>
+    <meta name="description" content="An interactive C-powered WebAssembly engine for learning, executing and visualizing Binary Search Tree algorithms. Built with C, Emscripten, WebAssembly, and SVG." />
+    <meta name="keywords" content="BST, Binary Search Tree, Data Structures, Algorithms, WebAssembly, C, Visualization, Education" />
+
+    <!-- Fonts + Styles -->
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ============================================================
+     SIDEBAR NAVIGATION
+     ============================================================ -->
+<aside class="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">🌲</div>
+            <div>
+                <div class="sidebar-title">BST Engine</div>
+                <div class="sidebar-subtitle">Visualization Lab</div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-group">
+            <div class="nav-group-label">Dashboard</div>
+            <div class="nav-item active" data-section="section-home">
+                <span class="nav-icon">🏠</span>
+                <span>Home</span>
+            </div>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-group-label">Build</div>
+            <div class="nav-item" data-section="section-input">
+                <span class="nav-icon">📋</span>
+                <span>Matrix Input</span>
+            </div>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-group-label">Operations</div>
+            <div class="nav-item" data-section="section-ops">
+                <span class="nav-icon">⚙️</span>
+                <span>BST Operations</span>
+            </div>
+            <div class="nav-item" data-section="section-traversal">
+                <span class="nav-icon">🔄</span>
+                <span>Traversals</span>
+            </div>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-group-label">Analysis</div>
+            <div class="nav-item" data-section="section-analysis">
+                <span class="nav-icon">🔬</span>
+                <span>Tree Analysis</span>
+            </div>
+            <div class="nav-item" data-section="section-complexity">
+                <span class="nav-icon">📊</span>
+                <span>Complexity</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Live Tree Stats in Sidebar -->
+    <div class="sidebar-stats">
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Live Stats</div>
+        <div class="stat-row">
+            <span>Nodes</span>
+            <span class="stat-val" id="info-nodes">0</span>
+        </div>
+        <div class="stat-row">
+            <span>Height</span>
+            <span class="stat-val" id="info-height">-</span>
+        </div>
+        <div class="stat-row">
+            <span>Leaves</span>
+            <span class="stat-val" id="info-leaves">0</span>
+        </div>
+        <div class="stat-row">
+            <span>Min</span>
+            <span class="stat-val" id="info-min">-</span>
+        </div>
+        <div class="stat-row">
+            <span>Max</span>
+            <span class="stat-val" id="info-max">-</span>
+        </div>
+        <div class="stat-row">
+            <span>Balanced</span>
+            <span class="stat-val" id="info-balanced">-</span>
+        </div>
+        <div class="stat-row">
+            <span>Valid BST</span>
+            <span class="stat-val" id="info-valid">-</span>
+        </div>
+    </div>
+</aside>
+
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
+<main class="main-content">
+
+    <!-- TOP HEADER -->
+    <header class="top-header">
+        <div class="header-left">
+            <h1 class="header-page-title">Binary Search Tree Analysis & Visualization Engine</h1>
+            <span class="engine-badge engine-js" id="engine-mode">⏳ Initializing...</span>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-warning btn-sm" id="btn-undo" title="Undo last operation">↩ Undo</button>
+            <button class="btn btn-danger btn-sm" id="btn-reset" title="Reset tree">🗑 Reset</button>
+        </div>
+    </header>
+
+    <!-- STATUS MESSAGE (appears below header) -->
+    <div style="padding: 0 24px;">
+        <div class="status-message" id="status-message" role="alert"></div>
+    </div>
+
+    <!-- ============================================================
+         HOME / DASHBOARD
+         ============================================================ -->
+    <div class="page-content">
+
+        <section class="section active" id="section-home" aria-label="Dashboard">
+            <!-- Hero Banner -->
+            <div class="home-hero" style="grid-column: 1/-1;">
+                <h2 class="hero-title">Binary Search Tree<br/>Analysis & Visualization Engine</h2>
+                <p class="hero-subtitle">
+                    An interactive educational laboratory powered by a C DSA core compiled to WebAssembly.
+                    Every operation — insertion, search, deletion, traversal — runs the actual C algorithm
+                    and generates step-by-step explanations with live SVG animation.
+                </p>
+                <div class="quick-actions">
+                    <button class="btn btn-primary" data-action="create">🌲 Create BST</button>
+                    <button class="btn btn-secondary" data-action="search">🔍 Search</button>
+                    <button class="btn btn-secondary" data-action="insert">➕ Insert</button>
+                    <button class="btn btn-secondary" data-action="delete">➖ Delete</button>
+                    <button class="btn btn-secondary" data-action="traversal">🔄 Traversals</button>
+                    <button class="btn btn-ghost" data-action="analyze">🔬 Analyze</button>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="home-stats">
+                <div class="stat-card">
+                    <div class="stat-num" id="home-nodes">0</div>
+                    <div class="stat-label">Total Nodes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num" id="home-height" style="color:var(--cyan)">-</div>
+                    <div class="stat-label">Tree Height</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num" style="font-size:16px;color:var(--green)" id="home-valid">-</div>
+                    <div class="stat-label">BST Valid</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num" style="font-size:14px;color:var(--purple)" id="home-type">Empty</div>
+                    <div class="stat-label">Tree Type</div>
+                </div>
+            </div>
+
+            <!-- Architecture Info -->
+            <div class="card" style="grid-column: 1/-1;">
+                <div class="card-title">System Architecture</div>
+                <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:0;align-items:center;text-align:center;padding:8px 0;">
+                    <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:14px 8px;">
+                        <div style="font-size:20px;margin-bottom:4px;">⚙️</div>
+                        <div style="font-size:11px;font-weight:700;color:#ef4444;margin-bottom:2px;">C DSA CORE</div>
+                        <div style="font-size:10px;color:var(--text-muted)">bst.c · traversal.c<br/>analysis.c · api.c</div>
+                    </div>
+                    <div style="font-size:22px;color:var(--text-muted)">→</div>
+                    <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:14px 8px;">
+                        <div style="font-size:20px;margin-bottom:4px;">🔧</div>
+                        <div style="font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:2px;">EMSCRIPTEN</div>
+                        <div style="font-size:10px;color:var(--text-muted)">emcc compiler<br/>C → WASM</div>
+                    </div>
+                    <div style="font-size:22px;color:var(--text-muted)">→</div>
+                    <div style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.2);border-radius:10px;padding:14px 8px;">
+                        <div style="font-size:20px;margin-bottom:4px;">⚡</div>
+                        <div style="font-size:11px;font-weight:700;color:#06b6d4;margin-bottom:2px;">WEBASSEMBLY</div>
+                        <div style="font-size:10px;color:var(--text-muted)">bst.wasm<br/>native speed</div>
+                    </div>
+                    <div style="font-size:22px;color:var(--text-muted)">→</div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;align-items:center;text-align:center;padding:4px 0 8px 0;">
+                    <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px 8px;margin-left:50%;">
+                        <div style="font-size:20px;margin-bottom:4px;">🔗</div>
+                        <div style="font-size:11px;font-weight:700;color:#3b82f6;margin-bottom:2px;">JS BRIDGE</div>
+                        <div style="font-size:10px;color:var(--text-muted)">bst-engine.js<br/>step dispatch</div>
+                    </div>
+                    <div style="font-size:22px;color:var(--text-muted)">→</div>
+                    <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:10px;padding:14px 8px;">
+                        <div style="font-size:20px;margin-bottom:4px;">🎬</div>
+                        <div style="font-size:11px;font-weight:700;color:#a855f7;margin-bottom:2px;">SVG ANIMATION</div>
+                        <div style="font-size:10px;color:var(--text-muted)">visualizer.js<br/>animation.js</div>
+                    </div>
+                    <div style="font-size:22px;color:var(--text-muted)">→</div>
+                    <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px 8px;">
+                        <div style="font-size:20px;margin-bottom:4px;">🖥️</div>
+                        <div style="font-size:11px;font-weight:700;color:#22c55e;margin-bottom:2px;">WEB UI</div>
+                        <div style="font-size:10px;color:var(--text-muted)">HTML/CSS<br/>Dashboard</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             MATRIX INPUT SECTION
+             ============================================================ -->
+        <section class="section" id="section-input" aria-label="Matrix Input">
+            <div class="input-section-layout" style="grid-column:1/-1;">
+                <div class="card">
+                    <div class="card-title">Matrix / Array Input</div>
+                    <label class="form-label" for="matrix-input">Enter values (separated by spaces, commas, or newlines)</label>
+                    <textarea class="input-field" id="matrix-input" rows="6"
+                        placeholder="50 30 70&#10;20 40 60&#10;80&#10;&#10;(spaces, commas, and newlines all work)"></textarea>
+                    <div class="flex gap-2 mt-3">
+                        <button class="btn btn-ghost" id="btn-parse-preview">👁 Preview</button>
+                        <button class="btn btn-primary" id="btn-create-bst">🌲 Create BST</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Parsed Values</div>
+                    <div id="parsed-values" style="min-height:60px;padding:8px 0;font-size:13px;color:var(--text-secondary);">
+                        Click "Preview" to see extracted values.
+                    </div>
+                    <div id="parse-errors" style="margin-top:8px;"></div>
+
+                    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;" />
+
+                    <div class="card-title">Quick Load Examples</div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('matrix-input').value='50 30 70 20 40 60 80'">Standard (7 nodes)</button>
+                        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('matrix-input').value='10 20 30 40 50'">Right-Skewed (ascending)</button>
+                        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('matrix-input').value='50 40 30 20 10'">Left-Skewed (descending)</button>
+                        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('matrix-input').value='50 25 75 12 37 62 87 6 18 31 43 56 68 81 93'">Larger tree (15 nodes)</button>
+                        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('matrix-input').value='100'">Single node</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             BST OPERATIONS SECTION
+             ============================================================ -->
+        <section class="section" id="section-ops" aria-label="BST Operations">
+            <div class="ops-layout">
+                <!-- Operation Input Cards -->
+                <div class="ops-grid">
+                    <div class="op-card">
+                        <div class="op-card-title">
+                            <span class="op-icon">🔍</span>
+                            <span>Search</span>
+                        </div>
+                        <div class="input-group">
+                            <input class="input-field" type="number" id="input-search" placeholder="Value to search" />
+                            <button class="btn btn-secondary" id="btn-search">Search</button>
+                        </div>
+                    </div>
+                    <div class="op-card">
+                        <div class="op-card-title">
+                            <span class="op-icon">➕</span>
+                            <span>Insert</span>
+                        </div>
+                        <div class="input-group">
+                            <input class="input-field" type="number" id="input-insert" placeholder="Value to insert" />
+                            <button class="btn btn-success" id="btn-insert">Insert</button>
+                        </div>
+                    </div>
+                    <div class="op-card">
+                        <div class="op-card-title">
+                            <span class="op-icon">➖</span>
+                            <span>Delete</span>
+                        </div>
+                        <div class="input-group">
+                            <input class="input-field" type="number" id="input-delete" placeholder="Value to delete" />
+                            <button class="btn btn-danger" id="btn-delete">Delete</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Path Info & Deletion Case -->
+                <div id="path-info"></div>
+                <div id="deletion-info"></div>
+
+                <!-- Main Visualization + Steps -->
+                <div class="viz-main-layout">
+                    <div>
+                        <!-- Visualization Area -->
+                        <div class="viz-container">
+                            <div class="viz-header">
+                                <span class="viz-title">BST Visualization</span>
+                                <div class="anim-controls">
+                                    <button class="btn btn-ghost btn-sm btn-icon" id="btn-anim-prev" title="Previous Step">⏮</button>
+                                    <button class="btn btn-secondary btn-sm btn-icon" id="btn-anim-play" title="Play">▶</button>
+                                    <button class="btn btn-ghost btn-sm btn-icon" id="btn-anim-pause" title="Pause">⏸</button>
+                                    <button class="btn btn-ghost btn-sm btn-icon" id="btn-anim-next" title="Next Step">⏭</button>
+                                    <button class="btn btn-ghost btn-sm btn-icon" id="btn-anim-stop" title="Stop">⏹</button>
+                                    <select class="speed-select" id="speed-select" title="Animation Speed">
+                                        <option value="Slow">🐢 Slow</option>
+                                        <option value="Normal" selected>⚡ Normal</option>
+                                        <option value="Fast">🚀 Fast</option>
+                                        <option value="Instant">💨 Instant</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="viz-body">
+                                <svg id="bst-svg" aria-label="Binary Search Tree Visualization"></svg>
+                            </div>
+                        </div>
+
+                        <!-- Complexity for current op -->
+                        <div id="complexity-panel"></div>
+                    </div>
+
+                    <!-- Right Column: Steps + Info -->
+                    <div class="info-panel">
+                        <!-- Steps Panel -->
+                        <div class="steps-panel">
+                            <div class="steps-header" id="steps-title">OPERATION STEPS</div>
+                            <div class="current-message" id="current-message">Execute an operation to see steps.</div>
+                            <ul class="steps-list" id="steps-list">
+                                <li class="step-empty">No steps to display.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Tree Info Card -->
+                        <div class="card">
+                            <div class="card-title">Tree Properties</div>
+                            <table class="info-table">
+                                <tr><td>Total Nodes</td><td id="info-nodes">0</td></tr>
+                                <tr><td>Leaf Nodes</td><td id="info-leaves">0</td></tr>
+                                <tr><td>Internal</td><td id="info-internal">0</td></tr>
+                                <tr><td>Height</td><td id="info-height">-</td></tr>
+                                <tr><td>Levels</td><td id="info-levels">0</td></tr>
+                                <tr><td>Edges</td><td id="info-edges">0</td></tr>
+                                <tr><td>Min Value</td><td id="info-min">-</td></tr>
+                                <tr><td>Max Value</td><td id="info-max">-</td></tr>
+                                <tr><td>Type</td><td id="info-type">Empty Tree</td></tr>
+                                <tr><td>Balanced</td><td id="info-balanced">-</td></tr>
+                                <tr><td>Valid BST</td><td id="info-valid">-</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             TRAVERSAL SECTION
+             ============================================================ -->
+        <section class="section" id="section-traversal" aria-label="Tree Traversals">
+            <div class="trav-layout">
+                <div>
+                    <div class="card mb-4">
+                        <div class="card-title">Choose Traversal</div>
+                        <div class="trav-buttons">
+                            <button class="btn btn-primary" id="btn-inorder">
+                                🔵 Inorder (L→Root→R)
+                            </button>
+                            <button class="btn btn-secondary" id="btn-preorder">
+                                🟡 Preorder (Root→L→R)
+                            </button>
+                            <button class="btn btn-secondary" id="btn-postorder">
+                                🟣 Postorder (L→R→Root)
+                            </button>
+                        </div>
+                        <div class="flex gap-2 mt-3" style="align-items:center;">
+                            <button class="btn btn-ghost btn-sm" id="btn-trav-prev">⏮</button>
+                            <button class="btn btn-success btn-sm" id="btn-trav-play">▶ Play</button>
+                            <button class="btn btn-ghost btn-sm" id="btn-trav-pause">⏸ Pause</button>
+                            <button class="btn btn-ghost btn-sm" id="btn-trav-next">⏭</button>
+                            <button class="btn btn-warning btn-sm" id="btn-trav-reset">↺ Reset</button>
+                            <select class="speed-select" id="trav-speed-select">
+                                <option value="Slow">🐢 Slow</option>
+                                <option value="Normal" selected>⚡ Normal</option>
+                                <option value="Fast">🚀 Fast</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Traversal Visualization -->
+                    <div class="viz-container">
+                        <div class="viz-header">
+                            <span class="viz-title">BST Tree View</span>
+                        </div>
+                        <div class="viz-body">
+                            <svg id="bst-svg-trav" aria-label="Traversal Visualization"
+                                 style="display:block;width:100%;min-height:300px;"></svg>
+                        </div>
+                    </div>
+
+                    <!-- Traversal Sequence Display -->
+                    <div id="traversal-display" class="card mt-3">
+                        <div id="trav-name" style="font-size:16px;font-weight:700;color:var(--text-accent);margin-bottom:4px;"></div>
+                        <div id="trav-desc" style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;"></div>
+                        <div id="trav-seq" style="display:flex;flex-wrap:wrap;align-items:center;gap:4px;"></div>
+                    </div>
+                </div>
+
+                <!-- Traversal Steps Panel -->
+                <div class="info-panel">
+                    <div class="steps-panel" style="max-height:500px;">
+                        <div class="steps-header">TRAVERSAL STEPS</div>
+                        <div class="current-message" id="trav-current-msg">Select a traversal to begin.</div>
+                        <ul class="steps-list" id="trav-steps-list">
+                            <li class="step-empty">No steps to display.</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Traversal Guide</div>
+                        <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
+                            <div style="padding:6px 0;border-bottom:1px solid var(--border-light);">
+                                <strong style="color:var(--blue)">Inorder (L→Root→R)</strong><br/>
+                                Produces sorted output from BST. Key property used for BST verification.
+                            </div>
+                            <div style="padding:6px 0;border-bottom:1px solid var(--border-light);">
+                                <strong style="color:var(--yellow)">Preorder (Root→L→R)</strong><br/>
+                                Root visited first. Used for tree copying and serialization.
+                            </div>
+                            <div style="padding:6px 0;">
+                                <strong style="color:var(--purple)">Postorder (L→R→Root)</strong><br/>
+                                Root visited last. Used for tree deletion (children before parent).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             ANALYSIS SECTION
+             ============================================================ -->
+        <section class="section" id="section-analysis" aria-label="Tree Analysis">
+            <div style="grid-column:1/-1;">
+                <div class="flex gap-3 mb-4" style="align-items:center;flex-wrap:wrap;">
+                    <button class="btn btn-primary" id="btn-analyze">🔬 Run Analysis</button>
+                    <span style="font-size:12px;color:var(--text-muted);">
+                        Analyzes the current BST and computes all properties.
+                    </span>
+                </div>
+                <div id="analysis-panel">
+                    <div style="text-align:center;padding:40px;color:var(--text-muted);font-size:13px;">
+                        Create a BST and click "Run Analysis" to see detailed tree properties.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             COMPLEXITY SECTION
+             ============================================================ -->
+        <section class="section" id="section-complexity" aria-label="Complexity Analysis">
+            <div class="complexity-layout">
+                <!-- SEARCH -->
+                <div class="comp-card">
+                    <div class="comp-card-title">🔍 Search</div>
+                    <div class="comp-card-sub">Binary path traversal to find value</div>
+                    <div class="comp-metrics">
+                        <div class="comp-metric">
+                            <span class="comp-metric-label">Average Case</span>
+                            <span class="comp-metric-val comp-avg">O(log n)</span>
+                        </div>
+                        <div class="comp-metric">
+                            <span class="comp-metric-label">Worst Case</span>
+                            <span class="comp-metric-val comp-worst">O(n)</span>
+                        </div>
+                        <div class="comp-metric">
+                            <span class="comp-metric-label">Space</span>
+                            <span class="comp-metric-val comp-space">O(h)</span>
+                        </div>
+                    </div>
+                    <div class="comp-card-note">
+                        Average O(log n) for balanced trees. Worst O(n) when the tree degenerates 
+                        into a linked list (completely skewed). Every node must be visited in the worst case.
+                    </div>
+                    <button class="btn btn-ghost btn-sm mt-2" data-complexity="search">Show Live Example</button>
+                </div>
+
+                <!-- INSERT -->
+                <div class="comp-card">
+                    <div class="comp-card-title">➕ Insert</div>
+                    <div class="comp-card-sub">Find position + link new node</div>
+                    <div class="comp-metrics">
+                        <div class="comp-metric">
+                            <span class="comp-metric-label">Average Case</span>
+                            <span class="comp-metric-val comp-avg">O(log n)</span>
+                        </div>
+                        <div class="comp-metric">
+                            <span class="comp-metric-label">Worst Case</span>
+                            <span class="comp-metric-val comp-worst">O(n)</span>
+                        </div>
+                        <div class="comp-metric">
+                            <span class="comp-metric-label">Space</span>
+                            <span class="comp-metric-val comp-space">O(h)</span>
+                        </div>
+                    </div>
+                    <div class="comp-card-note">
+                        Must traverse from root to correct position. Same traversal cost as search.
+                        Node creation itself is O(1) — only the traversal is O(h).
+                    </div>
+                    <button class="btn btn-ghost btn-sm mt-2" data-complexity="insert">Show Live Example</button>
+                </div>
+
+                <!-- DELETE -->
+                <div class="comp-card">
+                    <div class="comp-card-title">➖ Delete</div>
+                    <div class="comp-card-sub">Find + remove + restructure</div>
+                    <div class="comp-metrics">
+                        <div class="comp-metric">
+                            <span class="comp-metric-label">Average Case</span>
+                            <span class="comp-metric-val comp-avg">O(log n)</span>
+                        </div>
+                        <div class="comp-metric">
+                            <span class="comp-metric-label">Worst Case</span>
+                            <span class="comp-metric-val comp-worst">O(n)</span>
+                        </div>
+                        <div class="comp-metric">
+                            <span class="comp-metric-label">Space</span>
+                            <span class="comp-metric-val comp-space">O(h)</span>
+                        </div>
+                    </div>
+                    <div class="comp-card-note">
+                        Case 3 (two children) requires finding inorder successor — an extra O(h) traversal.
+                        But this is still bounded by O(h) overall.
+                    </div>
+                    <button class="btn btn-ghost btn-sm mt-2" data-complexity="delete">Show Live Example</button>
+                </div>
+
+                <!-- TRAVERSAL -->
+                <div class="comp-card">
+                    <div class="comp-card-title">🔄 Traversal</div>
+                    <div class="comp-card-sub">Inorder / Preorder / Postorder</div>
+                    <div class="comp-metrics">
+                        <div class="comp-metric">
+                            <span class="comp-metric-label">Time</span>
+                            <span class="comp-metric-val comp-avg">O(n)</span>
+                        </div>
+                        <div class="comp-metric">
+                            <span class="comp-metric-label">Worst Case</span>
+                            <span class="comp-metric-val comp-worst">O(n)</span>
+                        </div>
+                        <div class="comp-metric">
+                            <span class="comp-metric-label">Space</span>
+                            <span class="comp-metric-val comp-space">O(h)</span>
+                        </div>
+                    </div>
+                    <div class="comp-card-note">
+                        Always O(n) — every node visited exactly once. Space O(h) for recursion stack.
+                        For balanced trees h = O(log n), for skewed trees h = O(n).
+                    </div>
+                    <button class="btn btn-ghost btn-sm mt-2" data-complexity="inorder">Show Live Example</button>
+                </div>
+
+                <!-- Worst Case Explanation -->
+                <div class="comp-card" style="grid-column: 1/-1;">
+                    <div class="comp-card-title">⚠️ Why Worst Case is O(n)</div>
+                    <div class="comp-card-sub">When BST degenerates into a linked list</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+                        <div>
+                            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7;">
+                                Inserting values in sorted order (e.g., 10, 20, 30, 40, 50) creates a 
+                                <strong style="color:var(--orange)">right-skewed tree</strong> where every node 
+                                has only a right child. This is the worst case for a BST — it behaves 
+                                identically to a singly linked list.
+                            </p>
+                            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7;">
+                                To search for 50 in a 5-node right-skewed tree, you must visit all 5 nodes: 
+                                <code style="color:var(--cyan);font-family:var(--font-mono)">10 → 20 → 30 → 40 → 50</code>
+                            </p>
+                            <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+                                This is why <strong style="color:var(--purple)">self-balancing trees</strong> (AVL Trees, 
+                                Red-Black Trees) were invented — they maintain O(log n) height automatically through rotations.
+                            </p>
+                        </div>
+                        <div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;font-weight:600;">RIGHT-SKEWED BST (worst case)</div>
+                            <div class="skewed-demo">
+10<br/>
+&nbsp;↘<br/>
+&nbsp;&nbsp;20<br/>
+&nbsp;&nbsp;&nbsp;↘<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;30<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↘<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;40<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↘<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50
+                            </div>
+                            <div style="font-size:11px;color:var(--orange);margin-top:8px;">
+                                Height = n-1 = 4 (for 5 nodes)<br/>
+                                Search = O(n) = O(5) in this case<br/>
+                                Created by: INSERT 10 20 30 40 50
+                            </div>
+                            <button class="btn btn-warning btn-sm mt-3" onclick="
+                                document.getElementById('matrix-input').value='10 20 30 40 50';
+                                document.querySelector('[data-section=section-input]').click();
+                            ">
+                                Try This Example →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- h vs log n Explanation -->
+                <div class="comp-card" style="grid-column: 1/-1; margin-top:-4px;">
+                    <div class="comp-card-title">📐 What does O(h) mean?</div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px;">
+                        <div style="text-align:center;padding:16px;background:var(--bg-base);border-radius:var(--radius);">
+                            <div style="font-size:22px;margin-bottom:6px;">⚖️</div>
+                            <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:4px;">Balanced BST</div>
+                            <div style="font-family:var(--font-mono);font-size:20px;color:var(--green);margin-bottom:4px;">h = O(log n)</div>
+                            <div style="font-size:11px;color:var(--text-muted);">All operations O(log n)</div>
+                        </div>
+                        <div style="text-align:center;padding:16px;background:var(--bg-base);border-radius:var(--radius);">
+                            <div style="font-size:22px;margin-bottom:6px;">📏</div>
+                            <div style="font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:4px;">General BST</div>
+                            <div style="font-family:var(--font-mono);font-size:20px;color:var(--yellow);margin-bottom:4px;">h = O(log n) to O(n)</div>
+                            <div style="font-size:11px;color:var(--text-muted);">Depends on insertion order</div>
+                        </div>
+                        <div style="text-align:center;padding:16px;background:var(--bg-base);border-radius:var(--radius);">
+                            <div style="font-size:22px;margin-bottom:6px;">📎</div>
+                            <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:4px;">Skewed BST</div>
+                            <div style="font-family:var(--font-mono);font-size:20px;color:var(--red);margin-bottom:4px;">h = O(n)</div>
+                            <div style="font-size:11px;color:var(--text-muted);">Like a linked list</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div><!-- /.page-content -->
+</main>
+
+<!-- ============================================================
+     SCRIPTS
+     Note: bst-engine.js tries to load WASM first, falls back to JS
+     ============================================================ -->
+<script src="bst-engine.js"></script>
+<script src="visualizer.js"></script>
+<script src="animation.js"></script>
+<script src="app.js"></script>
+
+<!-- ============================================================
+     TRAVERSAL PAGE SECONDARY VISUALIZATION SETUP
+     (wires up a second visualizer for the traversal section)
+     ============================================================ -->
+<script>
+// Wait for app to be fully initialized (window.app set by app.js)
+function waitForApp(cb, retries = 20) {
+    if (window.app && window.bstEngine && window.BSTVisualizer && window.AnimationEngine) {
+        cb();
+    } else if (retries > 0) {
+        setTimeout(() => waitForApp(cb, retries - 1), 150);
+    } else {
+        console.warn('[Traversal] App not ready after maximum retries');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    waitForApp(() => {
+        // Create a secondary visualizer for the traversal SVG
+        const travSVG = document.getElementById('bst-svg-trav');
+        if (!travSVG) return;
+
+        const travViz = new BSTVisualizer('bst-svg-trav');
+
+        // Speed control for traversal
+        const travSpeedSel = document.getElementById('trav-speed-select');
+        if (travSpeedSel) {
+            travSpeedSel.addEventListener('change', (e) => {
+                if (window.app && window.app.animation) {
+                    window.app.animation.setSpeed(e.target.value);
+                }
+            });
+        }
+
+        // Sync traversal viz with main tree whenever traversal section opens
+        document.querySelectorAll('[data-section="section-traversal"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const treeData = window.bstEngine.getTree();
+                travViz.renderTree(treeData.tree, false);
+            });
+        });
+
+        // Override traversal buttons to run on travViz
+        function runTraversal(type) {
+            const treeData = window.bstEngine.getTree();
+            travViz.renderTree(treeData.tree, false);
+
+            let result;
+            switch (type) {
+                case 'inorder':   result = window.bstEngine.inorder();   break;
+                case 'preorder':  result = window.bstEngine.preorder();  break;
+                case 'postorder': result = window.bstEngine.postorder(); break;
+                default: return;
+            }
+
+            // Show sequence display
+            window.app.ui.showTraversalSequence(result.name, result.sequence, result.description);
+
+            // Build traversal steps panel
+            const travPanel = document.getElementById('trav-steps-list');
+            const travMsg   = document.getElementById('trav-current-msg');
+            if (travPanel) {
+                travPanel.innerHTML = result.steps.map((s, i) =>
+                    `<li class="step-item" data-index="${i}">
+                        <span class="step-num">${i+1}</span>
+                        <span class="step-msg">${s.message}</span>
+                     </li>`
+                ).join('');
+            }
+
+            // Create animation engine bound to travViz
+            const travAnim = new AnimationEngine(travViz, {
+                highlightStep: (idx) => {
+                    document.querySelectorAll('#trav-steps-list .step-item').forEach((el, i) => {
+                        el.classList.toggle('step-active', i === idx);
+                        if (i === idx) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+                    });
+                },
+                setCurrentMessage: (msg) => {
+                    if (travMsg) travMsg.textContent = msg;
+                }
+            });
+            travAnim.setSpeed(travSpeedSel?.value || 'Normal');
+
+            let visitIdx = 0;
+            travAnim.animateTraversal(result,
+                (nodeVal) => {
+                    window.app.ui.highlightTraversalNode(nodeVal, visitIdx++);
+                },
+                () => {
+                    window.app.ui.setStatus(`${result.name} traversal complete: ${result.sequence.join(' → ')}`, 'success');
+                }
+            );
+
+            window.app.ui.setStatus(`Playing ${result.name} traversal...`, 'info');
+            window.app._showComplexity(type);
+
+            // Wire traversal controls to travAnim
+            document.getElementById('btn-trav-play').onclick  = () => travAnim.resume();
+            document.getElementById('btn-trav-pause').onclick = () => travAnim.pause();
+            document.getElementById('btn-trav-reset').onclick = () => {
+                travAnim.stop();
+                travViz.clearHighlights();
+                visitIdx = 0;
+            };
+            document.getElementById('btn-trav-prev').onclick = () => travAnim.stepBackward();
+            document.getElementById('btn-trav-next').onclick = () => travAnim.stepForward();
+        }
+
+        // Wire traversal type buttons
+        document.getElementById('btn-inorder')?.addEventListener('click',   () => runTraversal('inorder'));
+        document.getElementById('btn-preorder')?.addEventListener('click',  () => runTraversal('preorder'));
+        document.getElementById('btn-postorder')?.addEventListener('click', () => runTraversal('postorder'));
+    });
+});
+</script>
+
+</body>
+</html>
