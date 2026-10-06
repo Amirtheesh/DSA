@@ -375,6 +375,229 @@ class JSBSTEngine {
         return node.data;
     }
 
+    /* -------- Advanced Operations -------- */
+    api_find_minimum() {
+        const result = this._initResult();
+        if (!this.root) {
+            this._addStep(result, STEP.NOT_FOUND, -1, -1, -1, "Tree is empty, no minimum exists.");
+            result.summary = "Tree is empty.";
+            result.success = 0;
+            result.tree = this._nodeToJSON(this.root);
+            return result;
+        }
+        let current = this.root;
+        while (current.left) {
+            result.path.push(current.data);
+            result.comparisons++;
+            this._addStep(result, STEP.MOVE_LEFT, current.data, -1, -1, `Node ${current.data} has a left child. Minimum must be smaller. Go left.`);
+            current = current.left;
+        }
+        result.path.push(current.data);
+        result.comparisons++;
+        this._addStep(result, STEP.FOUND, current.data, current.data, -1, `Node ${current.data} has no left child. This is the minimum value.`);
+        result.summary = `Minimum value is ${current.data}.`;
+        result.success = 1;
+        result.tree = this._nodeToJSON(this.root);
+        return result;
+    }
+
+    api_find_maximum() {
+        const result = this._initResult();
+        if (!this.root) {
+            this._addStep(result, STEP.NOT_FOUND, -1, -1, -1, "Tree is empty, no maximum exists.");
+            result.summary = "Tree is empty.";
+            result.success = 0;
+            result.tree = this._nodeToJSON(this.root);
+            return result;
+        }
+        let current = this.root;
+        while (current.right) {
+            result.path.push(current.data);
+            result.comparisons++;
+            this._addStep(result, STEP.MOVE_RIGHT, current.data, -1, -1, `Node ${current.data} has a right child. Maximum must be larger. Go right.`);
+            current = current.right;
+        }
+        result.path.push(current.data);
+        result.comparisons++;
+        this._addStep(result, STEP.FOUND, current.data, current.data, -1, `Node ${current.data} has no right child. This is the maximum value.`);
+        result.summary = `Maximum value is ${current.data}.`;
+        result.success = 1;
+        result.tree = this._nodeToJSON(this.root);
+        return result;
+    }
+
+    api_find_depth(data) {
+        const result = this._initResult();
+        if (!this.root) {
+            this._addStep(result, STEP.NOT_FOUND, -1, data, -1, "Tree is empty.");
+            result.summary = `Node ${data} not found (tree empty).`;
+            result.success = 0;
+            result.tree = this._nodeToJSON(this.root);
+            return result;
+        }
+        let depth = 0;
+        let current = this.root;
+        while (current) {
+            result.path.push(current.data);
+            result.comparisons++;
+            this._addStep(result, STEP.COMPARE, current.data, data, -1, `Compare target ${data} with ${current.data}`);
+            if (data === current.data) {
+                this._addStep(result, STEP.FOUND, current.data, data, -1, `Node ${data} found at depth ${depth}.`);
+                result.summary = `Depth of node ${data} is ${depth}.`;
+                result.success = 1;
+                result.tree = this._nodeToJSON(this.root);
+                return result;
+            } else if (data < current.data) {
+                this._addStep(result, STEP.MOVE_LEFT, current.data, data, -1, `${data} < ${current.data}, Go left.`);
+                current = current.left;
+            } else {
+                this._addStep(result, STEP.MOVE_RIGHT, current.data, data, -1, `${data} > ${current.data}, Go right.`);
+                current = current.right;
+            }
+            depth++;
+        }
+        this._addStep(result, STEP.NOT_FOUND, -1, data, -1, `Node ${data} not found in the tree.`);
+        result.summary = `Node ${data} not found.`;
+        result.success = 0;
+        result.tree = this._nodeToJSON(this.root);
+        return result;
+    }
+
+    api_find_parent(data) {
+        const result = this._initResult();
+        if (!this.root) {
+            result.summary = "Tree is empty.";
+            result.success = 0;
+            result.tree = this._nodeToJSON(this.root);
+            return result;
+        }
+        if (this.root.data === data) {
+            result.path.push(this.root.data);
+            result.comparisons++;
+            this._addStep(result, STEP.FOUND, this.root.data, data, -1, `Node ${data} is the root. It has no parent.`);
+            result.summary = `Node ${data} is the root, so it has no parent.`;
+            result.success = 1;
+            result.tree = this._nodeToJSON(this.root);
+            return result;
+        }
+        let current = this.root;
+        let parent = null;
+        while (current) {
+            result.path.push(current.data);
+            result.comparisons++;
+            this._addStep(result, STEP.COMPARE, current.data, data, -1, `Compare target ${data} with ${current.data}`);
+            if (data === current.data) {
+                this._addStep(result, STEP.FOUND, current.data, data, -1, `Node ${data} found. Its parent is ${parent.data}.`);
+                result.summary = `Parent of node ${data} is ${parent.data}.`;
+                result.success = 1;
+                result.tree = this._nodeToJSON(this.root);
+                return result;
+            } else if (data < current.data) {
+                parent = current;
+                this._addStep(result, STEP.MOVE_LEFT, current.data, data, -1, `${data} < ${current.data}, Go left.`);
+                current = current.left;
+            } else {
+                parent = current;
+                this._addStep(result, STEP.MOVE_RIGHT, current.data, data, -1, `${data} > ${current.data}, Go right.`);
+                current = current.right;
+            }
+        }
+        this._addStep(result, STEP.NOT_FOUND, -1, data, -1, `Node ${data} not found in the tree.`);
+        result.summary = `Node ${data} not found.`;
+        result.success = 0;
+        result.tree = this._nodeToJSON(this.root);
+        return result;
+    }
+
+    api_find_sibling(data) {
+        const result = this._initResult();
+        if (!this.root) {
+            result.summary = "Tree is empty.";
+            result.success = 0;
+            result.tree = this._nodeToJSON(this.root);
+            return result;
+        }
+        if (this.root.data === data) {
+            result.path.push(this.root.data);
+            result.comparisons++;
+            this._addStep(result, STEP.FOUND, this.root.data, data, -1, `Node ${data} is the root. It has no sibling.`);
+            result.summary = `Node ${data} is the root, so it has no sibling.`;
+            result.success = 1;
+            result.tree = this._nodeToJSON(this.root);
+            return result;
+        }
+        let current = this.root;
+        let parent = null;
+        while (current) {
+            result.path.push(current.data);
+            result.comparisons++;
+            this._addStep(result, STEP.COMPARE, current.data, data, -1, `Compare target ${data} with ${current.data}`);
+            if (data === current.data) {
+                let sibling = null;
+                if (parent) {
+                    if (parent.left === current) sibling = parent.right;
+                    else sibling = parent.left;
+                }
+                if (sibling) {
+                    this._addStep(result, STEP.FOUND, current.data, data, -1, `Node ${data} found. Its sibling is ${sibling.data}.`);
+                    result.summary = `Sibling of node ${data} is ${sibling.data}.`;
+                    result.success = 1;
+                } else {
+                    this._addStep(result, STEP.FOUND, current.data, data, -1, `Node ${data} found, but it has no sibling.`);
+                    result.summary = `Node ${data} has no sibling.`;
+                    result.success = 1;
+                }
+                result.tree = this._nodeToJSON(this.root);
+                return result;
+            } else if (data < current.data) {
+                parent = current;
+                this._addStep(result, STEP.MOVE_LEFT, current.data, data, -1, `${data} < ${current.data}, Go left.`);
+                current = current.left;
+            } else {
+                parent = current;
+                this._addStep(result, STEP.MOVE_RIGHT, current.data, data, -1, `${data} > ${current.data}, Go right.`);
+                current = current.right;
+            }
+        }
+        this._addStep(result, STEP.NOT_FOUND, -1, data, -1, `Node ${data} not found in the tree.`);
+        result.summary = `Node ${data} not found.`;
+        result.success = 0;
+        result.tree = this._nodeToJSON(this.root);
+        return result;
+    }
+
+    api_find_lca(data1, data2) {
+        const result = this._initResult();
+        if (!this.root) {
+            result.summary = "Tree is empty.";
+            result.success = 0;
+            result.tree = this._nodeToJSON(this.root);
+            return result;
+        }
+        let current = this.root;
+        while (current) {
+            result.path.push(current.data);
+            result.comparisons++;
+            this._addStep(result, STEP.COMPARE, current.data, -1, -1, `At node ${current.data}`);
+            
+            if (current.data > data1 && current.data > data2) {
+                this._addStep(result, STEP.MOVE_LEFT, current.data, -1, -1, `Both ${data1} and ${data2} are less than ${current.data}. LCA must be in left subtree.`);
+                current = current.left;
+            } else if (current.data < data1 && current.data < data2) {
+                this._addStep(result, STEP.MOVE_RIGHT, current.data, -1, -1, `Both ${data1} and ${data2} are greater than ${current.data}. LCA must be in right subtree.`);
+                current = current.right;
+            } else {
+                this._addStep(result, STEP.FOUND, current.data, current.data, -1, `Paths split at ${current.data}. This is the Lowest Common Ancestor.`);
+                result.summary = `LCA of ${data1} and ${data2} is ${current.data}.`;
+                result.success = 1;
+                result.tree = this._nodeToJSON(this.root);
+                return result;
+            }
+        }
+        result.tree = this._nodeToJSON(this.root);
+        return result;
+    }
+
     /* -------- Tree to serializable JSON format -------- */
     _nodeToJSON(node) {
         if (!node) return null;
@@ -578,6 +801,14 @@ class JSBSTEngine {
     api_get_leaf_count() { return this._getLeafCount(this.root); }
     api_get_min()        { return this._getMin(this.root); }
     api_get_max()        { return this._getMax(this.root); }
+
+    /* Convenience aliases matching BSTEngine interface */
+    reset()              { return this.api_reset(); }
+    insert(val)          { return this.api_insert(val); }
+    search(val)          { return this.api_search(val); }
+    delete(val)          { return this.api_delete(val); }
+    getTree()            { return this.api_get_tree(); }
+    getHeight()          { return this.api_get_height(); }
 }
 
 /* ============================================================
@@ -634,6 +865,15 @@ class BSTEngine {
         this._wasm_get_tree = Module.cwrap('api_get_tree', 'string', []);
         this._wasm_undo     = Module.cwrap('api_undo',     'string', []);
         this._wasm_reset    = Module.cwrap('api_reset',    'string', []);
+        
+        /* Advanced Ops */
+        this._wasm_find_minimum = Module.cwrap('api_find_minimum', 'string', []);
+        this._wasm_find_maximum = Module.cwrap('api_find_maximum', 'string', []);
+        this._wasm_find_depth   = Module.cwrap('api_find_depth', 'string', ['number']);
+        this._wasm_find_parent  = Module.cwrap('api_find_parent', 'string', ['number']);
+        this._wasm_find_sibling = Module.cwrap('api_find_sibling', 'string', ['number']);
+        this._wasm_find_lca     = Module.cwrap('api_find_lca', 'string', ['number', 'number']);
+        
         Module.ccall('api_init', null, [], []);
     }
 
@@ -663,6 +903,15 @@ class BSTEngine {
     validate()     { return this._call(this._wasm_validate, () => this.jsEngine.api_validate()); }
     getTree()      { return this._call(this._wasm_get_tree, () => this.jsEngine.api_get_tree()); }
     undo()         { return this._call(this._wasm_undo,     () => this.jsEngine.api_undo()); }
+    
+    /* Advanced Ops wrappers */
+    findMinimum()  { return this._call(this._wasm_find_minimum, () => this.jsEngine.api_find_minimum()); }
+    findMaximum()  { return this._call(this._wasm_find_maximum, () => this.jsEngine.api_find_maximum()); }
+    findDepth(v)   { return this._call(this._wasm_find_depth,   (x) => this.jsEngine.api_find_depth(x), [v]); }
+    findParent(v)  { return this._call(this._wasm_find_parent,  (x) => this.jsEngine.api_find_parent(x), [v]); }
+    findSibling(v) { return this._call(this._wasm_find_sibling, (x) => this.jsEngine.api_find_sibling(x), [v]); }
+    findLCA(v1,v2) { return this._call(this._wasm_find_lca,     (x,y) => this.jsEngine.api_find_lca(x,y), [v1, v2]); }
+    
     getHeight()    { return this.mode === 'WASM' ? Module.ccall('api_get_height','number',[],[]) : this.jsEngine.api_get_height(); }
     getNodeCount() { return this.mode === 'WASM' ? Module.ccall('api_get_node_count','number',[],[]) : this.jsEngine.api_get_node_count(); }
     getLeafCount() { return this.mode === 'WASM' ? Module.ccall('api_get_leaf_count','number',[],[]) : this.jsEngine.api_get_leaf_count(); }
@@ -672,5 +921,7 @@ class BSTEngine {
     getMode()      { return this.mode; }
 }
 
-/* Global singleton engine instance */
+/* Global classes and singleton engine instance */
+window.JSBSTEngine = JSBSTEngine;
+window.BSTEngine = BSTEngine;
 window.bstEngine = new BSTEngine();

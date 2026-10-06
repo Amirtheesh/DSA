@@ -1,0 +1,10 @@
+CompileFlags:
+  Add:
+    - -isystem
+    - C:/MinGW/include
+    - -isystem
+    - C:/MinGW/lib/gcc/mingw32/6.3.0/include
+    - -isystem
+    - C:/MinGW/lib/gcc/mingw32/6.3.0/include-fixed
+    - -I
+    - C:/Users/amirt/OneDrive/Desktop/DSA/BST-Visualization-Engine/c-core

@@ -508,3 +508,261 @@ Node* copyTree(Node *root) {
     newNode->right = copyTree(root->right);
     return newNode;
 }
+
+/* ============================================================
+ * ADVANCED OPERATIONS
+ * ============================================================ */
+
+Node* findMinimumOp(Node *root, OperationResult *result) {
+    char msg[256];
+    if (root == NULL) {
+        snprintf(msg, 255, "Tree is empty, no minimum exists.");
+        addStep(result, STEP_NOT_FOUND, -1, -1, -1, msg);
+        snprintf(result->summary, 511, "Tree is empty.");
+        result->success = 0;
+        return NULL;
+    }
+    
+    Node* current = root;
+    while (current->left != NULL) {
+        addPathNode(result, current->data);
+        result->comparisons++;
+        snprintf(msg, 255, "Node %d has a left child. Minimum must be smaller. Go left.", current->data);
+        addStep(result, STEP_MOVE_LEFT, current->data, -1, -1, msg);
+        current = current->left;
+    }
+    
+    addPathNode(result, current->data);
+    result->comparisons++;
+    snprintf(msg, 255, "Node %d has no left child. This is the minimum value.", current->data);
+    addStep(result, STEP_FOUND, current->data, current->data, -1, msg);
+    snprintf(result->summary, 511, "Minimum value is %d.", current->data);
+    result->success = 1;
+    return current;
+}
+
+Node* findMaximumOp(Node *root, OperationResult *result) {
+    char msg[256];
+    if (root == NULL) {
+        snprintf(msg, 255, "Tree is empty, no maximum exists.");
+        addStep(result, STEP_NOT_FOUND, -1, -1, -1, msg);
+        snprintf(result->summary, 511, "Tree is empty.");
+        result->success = 0;
+        return NULL;
+    }
+    
+    Node* current = root;
+    while (current->right != NULL) {
+        addPathNode(result, current->data);
+        result->comparisons++;
+        snprintf(msg, 255, "Node %d has a right child. Maximum must be larger. Go right.", current->data);
+        addStep(result, STEP_MOVE_RIGHT, current->data, -1, -1, msg);
+        current = current->right;
+    }
+    
+    addPathNode(result, current->data);
+    result->comparisons++;
+    snprintf(msg, 255, "Node %d has no right child. This is the maximum value.", current->data);
+    addStep(result, STEP_FOUND, current->data, current->data, -1, msg);
+    snprintf(result->summary, 511, "Maximum value is %d.", current->data);
+    result->success = 1;
+    return current;
+}
+
+int findDepthOp(Node *root, int data, OperationResult *result) {
+    char msg[256];
+    int depth = 0;
+    Node* current = root;
+    
+    if (root == NULL) {
+        snprintf(msg, 255, "Tree is empty.");
+        addStep(result, STEP_NOT_FOUND, -1, data, -1, msg);
+        snprintf(result->summary, 511, "Node %d not found (tree empty).", data);
+        result->success = 0;
+        return -1;
+    }
+
+    while (current != NULL) {
+        addPathNode(result, current->data);
+        result->comparisons++;
+        snprintf(msg, 255, "Compare target %d with %d", data, current->data);
+        addStep(result, STEP_COMPARE, current->data, data, -1, msg);
+        
+        if (data == current->data) {
+            snprintf(msg, 255, "Node %d found at depth %d.", data, depth);
+            addStep(result, STEP_FOUND, current->data, data, -1, msg);
+            snprintf(result->summary, 511, "Depth of node %d is %d.", data, depth);
+            result->success = 1;
+            return depth;
+        } else if (data < current->data) {
+            snprintf(msg, 255, "%d < %d, Go left.", data, current->data);
+            addStep(result, STEP_MOVE_LEFT, current->data, data, -1, msg);
+            current = current->left;
+        } else {
+            snprintf(msg, 255, "%d > %d, Go right.", data, current->data);
+            addStep(result, STEP_MOVE_RIGHT, current->data, data, -1, msg);
+            current = current->right;
+        }
+        depth++;
+    }
+    
+    snprintf(msg, 255, "Node %d not found in the tree.", data);
+    addStep(result, STEP_NOT_FOUND, -1, data, -1, msg);
+    snprintf(result->summary, 511, "Node %d not found.", data);
+    result->success = 0;
+    return -1;
+}
+
+Node* findParentOp(Node *root, int data, OperationResult *result) {
+    char msg[256];
+    if (root == NULL) {
+        snprintf(result->summary, 511, "Tree is empty.");
+        result->success = 0;
+        return NULL;
+    }
+    
+    if (root->data == data) {
+        addPathNode(result, root->data);
+        result->comparisons++;
+        snprintf(msg, 255, "Node %d is the root. It has no parent.", data);
+        addStep(result, STEP_FOUND, root->data, data, -1, msg);
+        snprintf(result->summary, 511, "Node %d is the root, so it has no parent.", data);
+        result->success = 1;
+        return NULL;
+    }
+    
+    Node* current = root;
+    Node* parent = NULL;
+    
+    while (current != NULL) {
+        addPathNode(result, current->data);
+        result->comparisons++;
+        snprintf(msg, 255, "Compare target %d with %d", data, current->data);
+        addStep(result, STEP_COMPARE, current->data, data, -1, msg);
+        
+        if (data == current->data) {
+            snprintf(msg, 255, "Node %d found. Its parent is %d.", data, parent->data);
+            addStep(result, STEP_FOUND, current->data, data, -1, msg);
+            snprintf(result->summary, 511, "Parent of node %d is %d.", data, parent->data);
+            result->success = 1;
+            return parent;
+        } else if (data < current->data) {
+            parent = current;
+            snprintf(msg, 255, "%d < %d, Go left.", data, current->data);
+            addStep(result, STEP_MOVE_LEFT, current->data, data, -1, msg);
+            current = current->left;
+        } else {
+            parent = current;
+            snprintf(msg, 255, "%d > %d, Go right.", data, current->data);
+            addStep(result, STEP_MOVE_RIGHT, current->data, data, -1, msg);
+            current = current->right;
+        }
+    }
+    
+    snprintf(msg, 255, "Node %d not found in the tree.", data);
+    addStep(result, STEP_NOT_FOUND, -1, data, -1, msg);
+    snprintf(result->summary, 511, "Node %d not found.", data);
+    result->success = 0;
+    return NULL;
+}
+
+Node* findSiblingOp(Node *root, int data, OperationResult *result) {
+    char msg[256];
+    if (root == NULL) {
+        snprintf(result->summary, 511, "Tree is empty.");
+        result->success = 0;
+        return NULL;
+    }
+    
+    if (root->data == data) {
+        addPathNode(result, root->data);
+        result->comparisons++;
+        snprintf(msg, 255, "Node %d is the root. It has no sibling.", data);
+        addStep(result, STEP_FOUND, root->data, data, -1, msg);
+        snprintf(result->summary, 511, "Node %d is the root, so it has no sibling.", data);
+        result->success = 1;
+        return NULL;
+    }
+    
+    Node* current = root;
+    Node* parent = NULL;
+    
+    while (current != NULL) {
+        addPathNode(result, current->data);
+        result->comparisons++;
+        snprintf(msg, 255, "Compare target %d with %d", data, current->data);
+        addStep(result, STEP_COMPARE, current->data, data, -1, msg);
+        
+        if (data == current->data) {
+            Node* sibling = NULL;
+            if (parent != NULL) {
+                if (parent->left == current) sibling = parent->right;
+                else sibling = parent->left;
+            }
+            
+            if (sibling != NULL) {
+                snprintf(msg, 255, "Node %d found. Its sibling is %d.", data, sibling->data);
+                addStep(result, STEP_FOUND, current->data, data, -1, msg);
+                snprintf(result->summary, 511, "Sibling of node %d is %d.", data, sibling->data);
+                result->success = 1;
+                return sibling;
+            } else {
+                snprintf(msg, 255, "Node %d found, but it has no sibling.", data);
+                addStep(result, STEP_FOUND, current->data, data, -1, msg);
+                snprintf(result->summary, 511, "Node %d has no sibling.", data);
+                result->success = 1;
+                return NULL;
+            }
+        } else if (data < current->data) {
+            parent = current;
+            snprintf(msg, 255, "%d < %d, Go left.", data, current->data);
+            addStep(result, STEP_MOVE_LEFT, current->data, data, -1, msg);
+            current = current->left;
+        } else {
+            parent = current;
+            snprintf(msg, 255, "%d > %d, Go right.", data, current->data);
+            addStep(result, STEP_MOVE_RIGHT, current->data, data, -1, msg);
+            current = current->right;
+        }
+    }
+    
+    snprintf(msg, 255, "Node %d not found in the tree.", data);
+    addStep(result, STEP_NOT_FOUND, -1, data, -1, msg);
+    snprintf(result->summary, 511, "Node %d not found.", data);
+    result->success = 0;
+    return NULL;
+}
+
+Node* findLCAOp(Node *root, int data1, int data2, OperationResult *result) {
+    char msg[256];
+    if (root == NULL) {
+        snprintf(result->summary, 511, "Tree is empty.");
+        result->success = 0;
+        return NULL;
+    }
+    
+    Node* current = root;
+    while (current != NULL) {
+        addPathNode(result, current->data);
+        result->comparisons++;
+        snprintf(msg, 255, "At node %d", current->data);
+        addStep(result, STEP_COMPARE, current->data, -1, -1, msg);
+        
+        if (current->data > data1 && current->data > data2) {
+            snprintf(msg, 255, "Both %d and %d are less than %d. LCA must be in left subtree.", data1, data2, current->data);
+            addStep(result, STEP_MOVE_LEFT, current->data, -1, -1, msg);
+            current = current->left;
+        } else if (current->data < data1 && current->data < data2) {
+            snprintf(msg, 255, "Both %d and %d are greater than %d. LCA must be in right subtree.", data1, data2, current->data);
+            addStep(result, STEP_MOVE_RIGHT, current->data, -1, -1, msg);
+            current = current->right;
+        } else {
+            snprintf(msg, 255, "Paths split at %d. This is the Lowest Common Ancestor.", current->data);
+            addStep(result, STEP_FOUND, current->data, current->data, -1, msg);
+            snprintf(result->summary, 511, "LCA of %d and %d is %d.", data1, data2, current->data);
+            result->success = 1;
+            return current;
+        }
+    }
+    return NULL;
+}

@@ -508,6 +508,58 @@ int api_get_max(void) {
 }
 
 /* ============================================================
+ * ADVANCED OPERATIONS API
+ * ============================================================ */
+
+EMSCRIPTEN_KEEPALIVE
+const char* api_find_minimum(void) {
+    OperationResult result;
+    initResult(&result);
+    findMinimumOp(bst_root, &result);
+    return serializeResult(&result);
+}
+
+EMSCRIPTEN_KEEPALIVE
+const char* api_find_maximum(void) {
+    OperationResult result;
+    initResult(&result);
+    findMaximumOp(bst_root, &result);
+    return serializeResult(&result);
+}
+
+EMSCRIPTEN_KEEPALIVE
+const char* api_find_depth(int data) {
+    OperationResult result;
+    initResult(&result);
+    findDepthOp(bst_root, data, &result);
+    return serializeResult(&result);
+}
+
+EMSCRIPTEN_KEEPALIVE
+const char* api_find_parent(int data) {
+    OperationResult result;
+    initResult(&result);
+    findParentOp(bst_root, data, &result);
+    return serializeResult(&result);
+}
+
+EMSCRIPTEN_KEEPALIVE
+const char* api_find_sibling(int data) {
+    OperationResult result;
+    initResult(&result);
+    findSiblingOp(bst_root, data, &result);
+    return serializeResult(&result);
+}
+
+EMSCRIPTEN_KEEPALIVE
+const char* api_find_lca(int data1, int data2) {
+    OperationResult result;
+    initResult(&result);
+    findLCAOp(bst_root, data1, data2, &result);
+    return serializeResult(&result);
+}
+
+/* ============================================================
  * STANDALONE TEST (compiled with GCC, not Emscripten)
  * ============================================================ */
 

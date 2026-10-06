@@ -1,0 +1,15 @@
+{
+  "C_Cpp.default.compilerPath": "C:/MinGW/bin/gcc.exe",
+  "C_Cpp.default.includePath": [
+    "${workspaceFolder}/**",
+    "${workspaceFolder}/c-core",
+    "C:/MinGW/include",
+    "C:/MinGW/lib/gcc/mingw32/6.3.0/include",
+    "C:/MinGW/lib/gcc/mingw32/6.3.0/include-fixed"
+  ],
+  "C_Cpp.intelliSenseEngine": "default",
+  "clangd.arguments": [
+    "--header-insertion=never",
+    "--query-driver=C:/MinGW/bin/gcc.exe"
+  ]
+}

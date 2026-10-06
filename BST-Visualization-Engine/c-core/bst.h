@@ -129,4 +129,12 @@ void initResult(OperationResult *result);
 void addStep(OperationResult *result, int type, int node_val,
              int target_val, int succ_val, const char *msg);
 
+/* Advanced Operations */
+Node* findMinimumOp(Node *root, OperationResult *result);
+Node* findMaximumOp(Node *root, OperationResult *result);
+int findDepthOp(Node *root, int data, OperationResult *result);
+Node* findParentOp(Node *root, int data, OperationResult *result);
+Node* findSiblingOp(Node *root, int data, OperationResult *result);
+Node* findLCAOp(Node *root, int data1, int data2, OperationResult *result);
+
 #endif /* BST_H */

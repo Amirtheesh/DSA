@@ -392,36 +392,105 @@ class BSTApp {
         /* Wire up UI events */
         this._bindEvents();
 
-        /* Show initial empty tree */
-        this.visualizer.renderTree(null, false);
-        this._updateTreeInfo();
-
-        /* Show dashboard */
-        this.ui.showSection('section-home');
+        /* Set up Hash Router */
+        this.router = new Router(this);
+        this._setupRoutes();
+        this.router.handleRoute();
 
         console.log('[BSTApp] Initialized. Engine mode:', mode);
+    }
+
+    /* ============================================================
+     * ROUTER & DYNAMIC OPERATION VIEW
+     * ============================================================ */
+    
+    _setupRoutes() {
+        const show = (sectionId) => () => this.ui.showSection(sectionId);
+        
+        this.router.addRoute('/', show('section-home'));
+        this.router.addRoute('/home', show('section-home'));
+        this.router.addRoute('/input', show('section-input'));
+        this.router.addRoute('/bst/operations', show('section-ops-landing'));
+        this.router.addRoute('/avl/compare', () => {
+            show('section-avl-compare')();
+            // Initialize instances if they don't exist
+            if (!this.compareBSTEngine) this.compareBSTEngine = new JSBSTEngine();
+            if (!this.compareAVLEngine && window.JSAVLEngine) this.compareAVLEngine = new JSAVLEngine();
+            if (!this.compareBSTViz) {
+                this.compareBSTViz = new BSTVisualizer('bst-svg-compare-bst');
+                this.compareBSTViz.showBalanceFactors = true;
+            }
+            if (!this.compareAVLViz) {
+                this.compareAVLViz = new BSTVisualizer('bst-svg-compare-avl');
+                this.compareAVLViz.showBalanceFactors = true;
+            }
+        });
+        this.router.addRoute('/traversals', show('section-traversal'));
+        this.router.addRoute('/analysis', show('section-analysis'));
+        this.router.addRoute('/bst/balance', () => {
+            show('section-balance')();
+            // Also sync the tree visually immediately so it's not empty
+            if (this.balanceViz && this.engine) {
+                this.balanceViz.renderTree(this.engine.getTree().tree, false);
+            }
+        });
+        this.router.addRoute('/complexity', show('section-complexity'));
+
+        // Advanced Operations Dynamic Route
+        const ops = ['search', 'insert', 'delete', 'minimum', 'maximum', 'height', 'depth', 'parent', 'sibling', 'lca'];
+        for (const op of ops) {
+            this.router.addRoute(`/bst/operations/${op}`, () => {
+                this._configureOperationView(op);
+                this.ui.showSection('section-operation');
+            });
+        }
+    }
+
+    _configureOperationView(opType) {
+        const titleEl = document.getElementById('current-op-title');
+        const input1 = document.getElementById('input-op');
+        const input2 = document.getElementById('input-op2');
+        const btn = document.getElementById('btn-op-execute');
+        
+        // Reset
+        input1.style.display = 'none';
+        input2.style.display = 'none';
+        input1.value = '';
+        input2.value = '';
+        
+        // Remove old event listeners by cloning
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        
+        const titles = {
+            search: '🔍 Search', insert: '➕ Insert', delete: '➖ Delete',
+            minimum: '⬇️ Find Minimum', maximum: '⬆️ Find Maximum',
+            height: '📏 Find Height', depth: '🎯 Find Depth',
+            parent: '👪 Find Parent', sibling: '👯 Find Sibling',
+            lca: '🌳 Lowest Common Ancestor'
+        };
+        titleEl.textContent = titles[opType] || 'Operation';
+
+        const needsOneInput = ['search', 'insert', 'delete', 'depth', 'parent', 'sibling'];
+        const needsTwoInputs = ['lca'];
+        
+        if (needsOneInput.includes(opType)) {
+            input1.style.display = 'block';
+            input1.placeholder = 'Target Value';
+        } else if (needsTwoInputs.includes(opType)) {
+            input1.style.display = 'block';
+            input2.style.display = 'block';
+            input1.placeholder = 'Value 1';
+            input2.placeholder = 'Value 2';
+        }
+        
+        newBtn.onclick = () => this._executeDynamicOp(opType);
     }
 
     /* ============================================================
      * EVENT BINDING
      * ============================================================ */
     _bindEvents() {
-        /* Navigation */
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const section = item.getAttribute('data-section');
-                if (section) this.ui.showSection(section);
-            });
-        });
-
-        /* Quick actions on home */
-        document.querySelectorAll('[data-action]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const action = btn.getAttribute('data-action');
-                this._handleQuickAction(action);
-            });
-        });
-
         /* Matrix input create BST */
         const createBtn = document.getElementById('btn-create-bst');
         if (createBtn) createBtn.addEventListener('click', () => this._onCreateBST());
@@ -430,20 +499,14 @@ class BSTApp {
         const previewBtn = document.getElementById('btn-parse-preview');
         if (previewBtn) previewBtn.addEventListener('click', () => this._onParsePreview());
 
-        /* Operations */
-        document.getElementById('btn-insert')?.addEventListener('click', () => this._onInsert());
-        document.getElementById('btn-search')?.addEventListener('click', () => this._onSearch());
-        document.getElementById('btn-delete')?.addEventListener('click', () => this._onDelete());
-
-        /* Enter key support on operation inputs */
-        ['input-insert', 'input-search', 'input-delete'].forEach(id => {
-            document.getElementById(id)?.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    const action = id.replace('input-', '');
-                    this[`_on${action.charAt(0).toUpperCase() + action.slice(1)}`]();
-                }
-            });
-        });
+        /* Enter key support on dynamic operation inputs */
+        const inputOp1 = document.getElementById('input-op');
+        const inputOp2 = document.getElementById('input-op2');
+        const handleEnter = (e) => {
+            if (e.key === 'Enter') document.getElementById('btn-op-execute').click();
+        };
+        if (inputOp1) inputOp1.addEventListener('keydown', handleEnter);
+        if (inputOp2) inputOp2.addEventListener('keydown', handleEnter);
 
         /* Traversal buttons */
         document.getElementById('btn-inorder')?.addEventListener('click',   () => this._onTraversal('inorder'));
@@ -467,6 +530,12 @@ class BSTApp {
 
         /* Analysis */
         document.getElementById('btn-analyze')?.addEventListener('click', () => this._onAnalyze());
+
+        /* Balance Analysis */
+        document.getElementById('btn-run-balance')?.addEventListener('click', () => this._onBalance());
+
+        /* AVL Comparison */
+        document.getElementById('btn-run-avl-compare')?.addEventListener('click', () => this._onAVLCompare());
 
         /* Undo */
         document.getElementById('btn-undo')?.addEventListener('click', () => this._onUndo());
@@ -588,123 +657,107 @@ class BSTApp {
         }
 
         /* Navigate to visualization if on input page */
-        this.ui.showSection('section-ops');
+        this.router.navigate('/bst/operations');
     }
 
-    async _onSearch() {
-        const input = document.getElementById('input-search');
-        const val = parseInt(input?.value?.trim(), 10);
-
-        if (isNaN(val)) {
-            this.ui.setStatus('Enter a valid integer to search.', 'error');
+    async _executeDynamicOp(opType) {
+        if (this.engine.getNodeCount() === 0 && opType !== 'insert') {
+            this.ui.setStatus('Tree is empty. Create a BST or Insert a node first.', 'warning');
             return;
         }
 
-        if (this.engine.getNodeCount() === 0) {
-            this.ui.setStatus('Tree is empty. Create a BST first.', 'warning');
+        const input1 = document.getElementById('input-op');
+        const input2 = document.getElementById('input-op2');
+        const v1 = parseInt(input1?.value?.trim(), 10);
+        const v2 = parseInt(input2?.value?.trim(), 10);
+        
+        const needsOneInput = ['search', 'insert', 'delete', 'depth', 'parent', 'sibling'];
+        const needsTwoInputs = ['lca'];
+
+        if (needsOneInput.includes(opType) && isNaN(v1)) {
+            this.ui.setStatus('Enter a valid integer value.', 'error');
+            return;
+        }
+        if (needsTwoInputs.includes(opType) && (isNaN(v1) || isNaN(v2))) {
+            this.ui.setStatus('Enter two valid integers.', 'error');
             return;
         }
 
         this.animation.stop();
         this.visualizer.clearHighlights();
+        
+        let result = null;
+        switch(opType) {
+            case 'search': result = this.engine.search(v1); break;
+            case 'insert': result = this.engine.insert(v1); break;
+            case 'delete': result = this.engine.delete(v1); break;
+            case 'minimum': result = this.engine.findMinimum(); break;
+            case 'maximum': result = this.engine.findMaximum(); break;
+            case 'height': result = { 
+                success: 1, 
+                summary: `Tree height is ${this.engine.getHeight()}`, 
+                steps: [{message: "Calculating tree height..."}, {message: `Height: ${this.engine.getHeight()}`}] 
+            }; break;
+            case 'depth': result = this.engine.findDepth(v1); break;
+            case 'parent': result = this.engine.findParent(v1); break;
+            case 'sibling': result = this.engine.findSibling(v1); break;
+            case 'lca': result = this.engine.findLCA(v1, v2); break;
+        }
 
-        const result = this.engine.search(val);
+        if (!result) return;
+
+        // Tree structure might have changed
+        if (['insert', 'delete'].includes(opType) && result.success) {
+            this.visualizer.adaptToTreeSize(this.engine.getNodeCount());
+            this.visualizer.renderTree(result.tree, false);
+            this._updateTreeInfo();
+        } else {
+            // Restore visualizer base state in case previous ops left artifacts
+            this.visualizer.renderTree(this.engine.getTree().tree, false);
+        }
 
         /* Build steps panel */
-        this.ui.buildStepsPanel(result.steps, 'SEARCH STEPS');
+        this.ui.buildStepsPanel(result.steps || [], opType.toUpperCase() + ' STEPS');
 
-        /* Show path */
-        const pathStr = result.path ? result.path.join(' → ') : '';
-        this._showPathInfo('Search Path', pathStr, result.comparisons, result.summary, result.success);
-
-        /* Animate */
-        this.animation.playSteps(result.steps, () => {
-            /* After animation, keep found/not-found state */
-        });
-
-        const type = result.success ? 'success' : 'warning';
-        this.ui.setStatus(result.summary, type);
-
-        this._showComplexity('search');
-    }
-
-    async _onInsert() {
-        const input = document.getElementById('input-insert');
-        const val = parseInt(input?.value?.trim(), 10);
-
-        if (isNaN(val)) {
-            this.ui.setStatus('Enter a valid integer to insert.', 'error');
-            return;
+        if (result.path) {
+            this._showPathInfo('Path', result.path.join(' → '), result.comparisons, result.summary, result.success);
+        } else {
+            document.getElementById('path-info').innerHTML = '';
         }
 
-        this.animation.stop();
-        this.visualizer.clearHighlights();
-
-        const result = this.engine.insert(val);
-
-        /* Re-render tree with new node */
-        this.visualizer.adaptToTreeSize(this.engine.getNodeCount());
-        this.visualizer.renderTree(result.tree, true);
-        this._updateTreeInfo();
-
-        /* Build steps */
-        this.ui.buildStepsPanel(result.steps, 'INSERTION STEPS');
-
-        const pathStr = result.path ? result.path.join(' → ') + (result.success ? ` → ${val}` : '') : '';
-        this._showPathInfo('Insertion Path', pathStr, result.comparisons, result.summary, result.success);
-
-        /* Animate on new tree */
-        this.animation.playSteps(result.steps, () => {
-            if (result.success) this.visualizer.highlightNode(val, 'inserted');
-        });
-
-        const type = result.success ? 'success' : 'warning';
-        this.ui.setStatus(result.summary, type);
-
-        if (input) input.value = '';
-        this._showComplexity('insert');
-    }
-
-    async _onDelete() {
-        const input = document.getElementById('input-delete');
-        const val = parseInt(input?.value?.trim(), 10);
-
-        if (isNaN(val)) {
-            this.ui.setStatus('Enter a valid integer to delete.', 'error');
-            return;
+        if (opType === 'delete' && result.deletionCase) {
+            this._showDeletionCase(result.deletionCase, v1, result.summary);
+        } else {
+            document.getElementById('deletion-info').innerHTML = '';
         }
 
-        if (this.engine.getNodeCount() === 0) {
-            this.ui.setStatus('Tree is empty.', 'warning');
-            return;
+        if (result.steps && result.steps.length > 0) {
+            this.animation.playSteps(result.steps, () => {
+                if (['insert', 'search'].includes(opType) && result.success) {
+                    this.visualizer.highlightNode(v1, 'inserted'); // Generic highlight
+                } else if (opType === 'delete' && result.success) {
+                    // Re-render tree cleanly after animation
+                    setTimeout(() => {
+                        this.visualizer.clearHighlights();
+                        this.visualizer.renderTree(result.tree, true);
+                    }, 300);
+                }
+            });
         }
 
-        this.animation.stop();
-
-        /* Animate deletion steps on CURRENT tree BEFORE rendering new tree */
-        const result = this.engine.delete(val);
-
-        /* Build steps panel */
-        this.ui.buildStepsPanel(result.steps, 'DELETION STEPS');
-
-        /* Show deletion case explanation */
-        this._showDeletionCase(result.deletionCase, val, result.summary);
-
-        /* Animate steps, then re-render */
-        this.animation.playSteps(result.steps, () => {
-            /* After animation: render updated tree */
-            setTimeout(() => {
-                this.visualizer.clearHighlights();
-                this.visualizer.renderTree(result.tree, true);
-                this._updateTreeInfo();
-            }, 300);
-        });
-
         const type = result.success ? 'success' : 'warning';
-        this.ui.setStatus(result.summary, type);
-
-        if (input) input.value = '';
-        this._showComplexity('delete');
+        this.ui.setStatus(result.summary || `Operation ${opType} complete.`, type);
+        
+        // Show complexity (we might need to add new complexities later, but fallback for now)
+        if (['search', 'insert', 'delete'].includes(opType)) {
+            this._showComplexity(opType);
+        }
+        
+        // Clear inputs after successful execution
+        if (result.success && input1) {
+            input1.value = '';
+            if (input2) input2.value = '';
+        }
     }
 
     async _onTraversal(type) {
@@ -756,6 +809,123 @@ class BSTApp {
         this.ui.renderAnalysis(analysis);
         this._updateTreeInfo();
         this.ui.showSection('section-analysis');
+    }
+
+    _onBalance() {
+        if (this.engine.getNodeCount() === 0) {
+            this.ui.setStatus('Tree is empty. Create a BST first.', 'warning');
+            return;
+        }
+
+        if (!this.balanceViz) {
+            const svgEl = document.getElementById('bst-svg-balance');
+            if (svgEl) {
+                this.balanceViz = new BSTVisualizer('bst-svg-balance');
+                this.balanceViz.showBalanceFactors = true;
+            }
+        }
+
+        if (this.balanceViz) {
+            const treeData = this.engine.getTree();
+            const analysis = this.engine.analyze();
+            
+            // Render tree with balance factors shown
+            this.balanceViz.renderTree(treeData.tree, false);
+            
+            // Update status text
+            const statusDiv = document.getElementById('balance-status');
+            if (statusDiv) {
+                statusDiv.innerHTML = `
+                    <div style="font-weight:600;color:${analysis.isBalanced ? 'var(--green)' : 'var(--red)'};font-size:16px;margin-bottom:8px;">
+                        ${analysis.isBalanced ? '✓ Balanced BST' : '✗ Unbalanced BST'}
+                    </div>
+                    <div style="margin-bottom:4px;"><strong>Root Balance Factor:</strong> ${analysis.balanceFactor > 0 ? '+' : ''}${analysis.balanceFactor}</div>
+                    <div style="font-size:13px;color:var(--text-secondary);">${analysis.balanceMsg}</div>
+                `;
+            }
+            
+            this.ui.setStatus('Balance factors computed and visualized.', 'success');
+        }
+    }
+
+    _onAVLCompare() {
+        const input = document.getElementById('avl-input')?.value || '';
+        const { values, errors, duplicates } = parseInput(input);
+        
+        if (values.length === 0) {
+            this.ui.setStatus('No valid values to insert for comparison.', 'error');
+            return;
+        }
+
+        if (!this.compareBSTEngine || !this.compareAVLEngine) return;
+
+        // Reset engines defensively
+        if (typeof this.compareBSTEngine.reset === 'function') {
+            this.compareBSTEngine.reset();
+        } else if (typeof this.compareBSTEngine.api_reset === 'function') {
+            this.compareBSTEngine.api_reset();
+        }
+
+        if (typeof this.compareAVLEngine.reset === 'function') {
+            this.compareAVLEngine.reset();
+        } else if (typeof this.compareAVLEngine.api_reset === 'function') {
+            this.compareAVLEngine.api_reset();
+        }
+
+        const logPanel = document.getElementById('avl-compare-log');
+        if (logPanel) logPanel.innerHTML = '';
+        
+        let bstStepsTotal = 0;
+        let avlStepsTotal = 0;
+
+        // Insert into both and log
+        for (const val of values) {
+            const bstRes = typeof this.compareBSTEngine.insert === 'function'
+                ? this.compareBSTEngine.insert(val)
+                : this.compareBSTEngine.api_insert(val);
+            const avlRes = typeof this.compareAVLEngine.insert === 'function'
+                ? this.compareAVLEngine.insert(val)
+                : this.compareAVLEngine.api_insert(val);
+            
+            bstStepsTotal += bstRes.steps ? bstRes.steps.length : 0;
+            avlStepsTotal += avlRes.steps ? avlRes.steps.length : 0;
+            
+            // Look for rotations in AVL steps
+            const rotations = avlRes.steps ? avlRes.steps.filter(s => s.type === 14 || s.type === 15 || s.type === 16).map(s => s.message) : [];
+            
+            if (logPanel) {
+                logPanel.innerHTML += `<div><strong>Insert ${val}:</strong> BST took ${bstRes.steps ? bstRes.steps.length : 0} steps, AVL took ${avlRes.steps ? avlRes.steps.length : 0} steps. ${rotations.length > 0 ? `<span style="color:var(--yellow)">[${rotations.join(', ')}]</span>` : ''}</div>`;
+            }
+        }
+
+        // Render
+        const bstTree = typeof this.compareBSTEngine.getTree === 'function'
+            ? this.compareBSTEngine.getTree()
+            : this.compareBSTEngine.api_get_tree();
+        const avlTree = typeof this.compareAVLEngine.getTree === 'function'
+            ? this.compareAVLEngine.getTree()
+            : this.compareAVLEngine.api_get_tree();
+
+        this.compareBSTViz.renderTree(bstTree.tree, true);
+        this.compareAVLViz.renderTree(avlTree.tree, true);
+
+        // Update heights
+        const bstH = typeof this.compareBSTEngine.getHeight === 'function'
+            ? this.compareBSTEngine.getHeight()
+            : this.compareBSTEngine.api_get_height();
+        const avlH = typeof this.compareAVLEngine.getHeight === 'function'
+            ? this.compareAVLEngine.getHeight()
+            : this.compareAVLEngine.api_get_height();
+
+        document.getElementById('bst-compare-height').textContent = `Height: ${bstH}`;
+        document.getElementById('avl-compare-height').textContent = `Height: ${avlH}`;
+
+        if (logPanel) {
+            logPanel.innerHTML += `<div style="margin-top:12px;border-top:1px solid var(--border-light);padding-top:12px;"><strong>Final Stats:</strong> BST Total Steps: ${bstStepsTotal}, AVL Total Steps: ${avlStepsTotal}</div>`;
+            logPanel.scrollTop = logPanel.scrollHeight;
+        }
+        
+        this.ui.setStatus(`Compared insertion of ${values.length} elements.`, 'success');
     }
 
     _onUndo() {

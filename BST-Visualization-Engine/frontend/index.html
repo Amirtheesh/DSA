@@ -31,42 +31,50 @@
     <nav class="sidebar-nav">
         <div class="nav-group">
             <div class="nav-group-label">Dashboard</div>
-            <div class="nav-item active" data-section="section-home">
+            <a class="nav-item" href="#/home">
                 <span class="nav-icon">🏠</span>
                 <span>Home</span>
-            </div>
+            </a>
         </div>
 
         <div class="nav-group">
             <div class="nav-group-label">Build</div>
-            <div class="nav-item" data-section="section-input">
+            <a class="nav-item" href="#/input">
                 <span class="nav-icon">📋</span>
                 <span>Matrix Input</span>
-            </div>
+            </a>
         </div>
 
         <div class="nav-group">
             <div class="nav-group-label">Operations</div>
-            <div class="nav-item" data-section="section-ops">
+            <a class="nav-item" href="#/bst/operations">
                 <span class="nav-icon">⚙️</span>
                 <span>BST Operations</span>
-            </div>
-            <div class="nav-item" data-section="section-traversal">
+            </a>
+            <a class="nav-item" href="#/avl/compare">
+                <span class="nav-icon">⚔️</span>
+                <span>BST vs AVL</span>
+            </a>
+            <a class="nav-item" href="#/traversals">
                 <span class="nav-icon">🔄</span>
                 <span>Traversals</span>
-            </div>
+            </a>
         </div>
 
         <div class="nav-group">
             <div class="nav-group-label">Analysis</div>
-            <div class="nav-item" data-section="section-analysis">
+            <a class="nav-item" href="#/analysis">
                 <span class="nav-icon">🔬</span>
                 <span>Tree Analysis</span>
-            </div>
-            <div class="nav-item" data-section="section-complexity">
+            </a>
+            <a class="nav-item" href="#/bst/balance">
+                <span class="nav-icon">⚖️</span>
+                <span>Balance Analysis</span>
+            </a>
+            <a class="nav-item" href="#/complexity">
                 <span class="nav-icon">📊</span>
                 <span>Complexity</span>
-            </div>
+            </a>
         </div>
     </nav>
 
@@ -141,12 +149,12 @@
                     and generates step-by-step explanations with live SVG animation.
                 </p>
                 <div class="quick-actions">
-                    <button class="btn btn-primary" data-action="create">🌲 Create BST</button>
-                    <button class="btn btn-secondary" data-action="search">🔍 Search</button>
-                    <button class="btn btn-secondary" data-action="insert">➕ Insert</button>
-                    <button class="btn btn-secondary" data-action="delete">➖ Delete</button>
-                    <button class="btn btn-secondary" data-action="traversal">🔄 Traversals</button>
-                    <button class="btn btn-ghost" data-action="analyze">🔬 Analyze</button>
+                    <a href="#/input" class="btn btn-primary" style="text-decoration:none;">🌲 Create BST</a>
+                    <a href="#/bst/operations/search" class="btn btn-secondary" style="text-decoration:none;">🔍 Search</a>
+                    <a href="#/bst/operations/insert" class="btn btn-secondary" style="text-decoration:none;">➕ Insert</a>
+                    <a href="#/bst/operations/delete" class="btn btn-secondary" style="text-decoration:none;">➖ Delete</a>
+                    <a href="#/traversals" class="btn btn-secondary" style="text-decoration:none;">🔄 Traversals</a>
+                    <a href="#/analysis" class="btn btn-ghost" style="text-decoration:none;">🔬 Analyze</a>
                 </div>
             </div>
 
@@ -253,41 +261,63 @@
         </section>
 
         <!-- ============================================================
-             BST OPERATIONS SECTION
+             BST OPERATIONS LANDING
              ============================================================ -->
-        <section class="section" id="section-ops" aria-label="BST Operations">
-            <div class="ops-layout">
-                <!-- Operation Input Cards -->
+        <section class="section" id="section-ops-landing" aria-label="BST Operations">
+            <div class="card" style="grid-column: 1/-1;">
+                <div class="card-title">Basic Operations</div>
+                <div class="ops-grid" style="margin-bottom:24px;">
+                    <a href="#/bst/operations/search" class="op-card" style="text-decoration:none;cursor:pointer;">
+                        <div class="op-card-title"><span class="op-icon">🔍</span><span>Search</span></div>
+                    </a>
+                    <a href="#/bst/operations/insert" class="op-card" style="text-decoration:none;cursor:pointer;">
+                        <div class="op-card-title"><span class="op-icon">➕</span><span>Insert</span></div>
+                    </a>
+                    <a href="#/bst/operations/delete" class="op-card" style="text-decoration:none;cursor:pointer;">
+                        <div class="op-card-title"><span class="op-icon">➖</span><span>Delete</span></div>
+                    </a>
+                </div>
+                
+                <div class="card-title">Advanced Operations</div>
                 <div class="ops-grid">
-                    <div class="op-card">
-                        <div class="op-card-title">
-                            <span class="op-icon">🔍</span>
-                            <span>Search</span>
-                        </div>
-                        <div class="input-group">
-                            <input class="input-field" type="number" id="input-search" placeholder="Value to search" />
-                            <button class="btn btn-secondary" id="btn-search">Search</button>
-                        </div>
-                    </div>
-                    <div class="op-card">
-                        <div class="op-card-title">
-                            <span class="op-icon">➕</span>
-                            <span>Insert</span>
-                        </div>
-                        <div class="input-group">
-                            <input class="input-field" type="number" id="input-insert" placeholder="Value to insert" />
-                            <button class="btn btn-success" id="btn-insert">Insert</button>
-                        </div>
-                    </div>
-                    <div class="op-card">
-                        <div class="op-card-title">
-                            <span class="op-icon">➖</span>
-                            <span>Delete</span>
-                        </div>
-                        <div class="input-group">
-                            <input class="input-field" type="number" id="input-delete" placeholder="Value to delete" />
-                            <button class="btn btn-danger" id="btn-delete">Delete</button>
-                        </div>
+                    <a href="#/bst/operations/minimum" class="op-card" style="text-decoration:none;cursor:pointer;">
+                        <div class="op-card-title"><span class="op-icon">⬇️</span><span>Find Minimum</span></div>
+                    </a>
+                    <a href="#/bst/operations/maximum" class="op-card" style="text-decoration:none;cursor:pointer;">
+                        <div class="op-card-title"><span class="op-icon">⬆️</span><span>Find Maximum</span></div>
+                    </a>
+                    <a href="#/bst/operations/height" class="op-card" style="text-decoration:none;cursor:pointer;">
+                        <div class="op-card-title"><span class="op-icon">📏</span><span>Find Height</span></div>
+                    </a>
+                    <a href="#/bst/operations/depth" class="op-card" style="text-decoration:none;cursor:pointer;">
+                        <div class="op-card-title"><span class="op-icon">🎯</span><span>Find Depth</span></div>
+                    </a>
+                    <a href="#/bst/operations/parent" class="op-card" style="text-decoration:none;cursor:pointer;">
+                        <div class="op-card-title"><span class="op-icon">👪</span><span>Find Parent</span></div>
+                    </a>
+                    <a href="#/bst/operations/sibling" class="op-card" style="text-decoration:none;cursor:pointer;">
+                        <div class="op-card-title"><span class="op-icon">👯</span><span>Find Sibling</span></div>
+                    </a>
+                    <a href="#/bst/operations/lca" class="op-card" style="text-decoration:none;cursor:pointer;">
+                        <div class="op-card-title"><span class="op-icon">🌳</span><span>Lowest Common Ancestor</span></div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             GENERIC OPERATION VIEW
+             ============================================================ -->
+        <section class="section" id="section-operation" aria-label="BST Operation">
+            <div class="ops-layout">
+                <!-- Dynamic Header and Input -->
+                <div class="card" style="grid-column: 1/-1; display:flex; gap:16px; align-items:center;">
+                    <a href="#/bst/operations" class="btn btn-ghost btn-sm">← Back</a>
+                    <h2 id="current-op-title" style="margin:0; font-size:18px;">Operation</h2>
+                    <div id="current-op-controls" class="input-group" style="margin-left:auto; width:auto; max-width:400px;">
+                        <input class="input-field" type="number" id="input-op" placeholder="Value" style="display:none;" />
+                        <input class="input-field" type="number" id="input-op2" placeholder="Value 2" style="display:none;" />
+                        <button class="btn btn-primary" id="btn-op-execute">Execute</button>
                     </div>
                 </div>
 
@@ -433,6 +463,107 @@
                             <div style="padding:6px 0;">
                                 <strong style="color:var(--purple)">Postorder (L→R→Root)</strong><br/>
                                 Root visited last. Used for tree deletion (children before parent).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             AVL COMPARE SECTION
+             ============================================================ -->
+        <section class="section" id="section-avl-compare" aria-label="BST vs AVL Comparison">
+            <div class="card mb-4">
+                <div class="card-title">BST vs AVL Comparison</div>
+                <p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">
+                    Compare how the standard Binary Search Tree and self-balancing AVL Tree handle the exact same sequence of insertions.
+                </p>
+                <div class="input-group">
+                    <input type="text" id="avl-input" class="input-field" placeholder="e.g. 10 20 30 40 50">
+                    <button class="btn btn-primary" id="btn-run-avl-compare">Compare Insertion</button>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px; min-height: 500px;">
+                <!-- BST Side -->
+                <div class="viz-container">
+                    <div class="viz-header" style="justify-content:space-between">
+                        <span class="viz-title">Standard BST</span>
+                        <span class="stat-badge" id="bst-compare-height">Height: -</span>
+                    </div>
+                    <div class="viz-body">
+                        <svg id="bst-svg-compare-bst" style="display:block;width:100%;height:100%;"></svg>
+                    </div>
+                </div>
+
+                <!-- AVL Side -->
+                <div class="viz-container">
+                    <div class="viz-header" style="justify-content:space-between">
+                        <span class="viz-title">AVL Tree</span>
+                        <span class="stat-badge" id="avl-compare-height">Height: -</span>
+                    </div>
+                    <div class="viz-body">
+                        <svg id="bst-svg-compare-avl" style="display:block;width:100%;height:100%;"></svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-title">Comparison Log</div>
+                <div id="avl-compare-log" style="font-family:var(--font-mono);font-size:13px;color:var(--text-secondary);max-height:200px;overflow-y:auto;background:var(--bg-base);padding:12px;border-radius:4px;border:1px solid var(--border-light);">
+                    Ready for comparison.
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             BALANCE ANALYSIS SECTION
+             ============================================================ -->
+        <section class="section" id="section-balance" aria-label="Balance Analysis">
+            <div class="trav-layout">
+                <div>
+                    <div class="card mb-4">
+                        <div class="card-title">Balance Factor Analysis</div>
+                        <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:16px;">
+                            The <strong>Balance Factor (BF)</strong> of a node is the height of its left subtree minus the height of its right subtree:
+                            <br/><code style="color:var(--cyan);font-family:var(--font-mono)">BF = height(left) - height(right)</code>
+                        </p>
+                        <button class="btn btn-primary w-100" id="btn-run-balance" style="margin-bottom:8px;">⚖️ Calculate Balance Factors</button>
+                    </div>
+
+                    <!-- Balance Visualization -->
+                    <div class="viz-container">
+                        <div class="viz-header">
+                            <span class="viz-title">Balance Factor View</span>
+                        </div>
+                        <div class="viz-body">
+                            <svg id="bst-svg-balance" aria-label="Balance Visualization"
+                                 style="display:block;width:100%;min-height:300px;"></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Panel -->
+                <div class="info-panel">
+                    <div class="card">
+                        <div class="card-title">Balance Status</div>
+                        <div id="balance-status" style="font-size:14px;color:var(--text-muted);line-height:1.6;padding:12px 0;">
+                            Run analysis to see balance status.
+                        </div>
+                        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-light);">
+                            <div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">COLOR LEGEND</div>
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                                <div style="width:12px;height:12px;border-radius:50%;background:#22c55e;"></div>
+                                <span style="font-size:12px;color:var(--text-muted)">Balanced (BF ∈ {-1, 0, 1})</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                                <div style="width:12px;height:12px;border-radius:50%;background:#eab308;"></div>
+                                <span style="font-size:12px;color:var(--text-muted)">Left Heavy (BF > 1)</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div style="width:12px;height:12px;border-radius:50%;background:#ef4444;"></div>
+                                <span style="font-size:12px;color:var(--text-muted)">Right Heavy (BF < -1)</span>
                             </div>
                         </div>
                     </div>
@@ -648,8 +779,10 @@
      Note: bst-engine.js tries to load WASM first, falls back to JS
      ============================================================ -->
 <script src="bst-engine.js"></script>
+<script src="avl-engine.js"></script>
 <script src="visualizer.js"></script>
 <script src="animation.js"></script>
+<script src="router.js"></script>
 <script src="app.js"></script>
 
 <!-- ============================================================

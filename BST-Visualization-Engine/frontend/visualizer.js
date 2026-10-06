@@ -37,6 +37,7 @@ class BSTVisualizer {
         this.nodeMap = new Map(); /* value → DOM element */
         this.currentHighlights = new Set();
         this.animating = false;
+        this.showBalanceFactors = false;
 
         /* Colors for each visual state */
         this.stateColors = {
@@ -199,11 +200,20 @@ class BSTVisualizer {
 
     _deepCopyWithLayout(node) {
         if (!node) return null;
+        const left = this._deepCopyWithLayout(node.left);
+        const right = this._deepCopyWithLayout(node.right);
+        
+        const lh = left ? left._height : 0;
+        const rh = right ? right._height : 0;
+        
         return {
             value: node.value,
-            left:  this._deepCopyWithLayout(node.left),
-            right: this._deepCopyWithLayout(node.right),
-            _x: 0, _depth: 0
+            left: left,
+            right: right,
+            _x: 0, 
+            _depth: 0,
+            _height: Math.max(lh, rh) + 1,
+            _bf: lh - rh
         };
     }
 
@@ -248,7 +258,7 @@ class BSTVisualizer {
         }
 
         /* Draw this node */
-        this._drawNode(nodeGroup, node.value, pos, 'normal', animate);
+        this._drawNode(nodeGroup, node.value, pos, 'normal', animate, node._bf);
 
         /* Recurse on children */
         this._renderNode(node.left,  positions, edgeGroup, nodeGroup, pos, animate);
@@ -292,8 +302,9 @@ class BSTVisualizer {
      * @param pos      {x, y} position
      * @param state    Visual state name (keys of stateColors)
      * @param animate  Whether to animate entrance
+     * @param bf       Balance Factor (optional)
      */
-    _drawNode(group, value, pos, state, animate) {
+    _drawNode(group, value, pos, state, animate, bf = 0) {
         const colors = this.stateColors[state] || this.stateColors.normal;
         const r = this.nodeRadius;
 
@@ -340,6 +351,31 @@ class BSTVisualizer {
         g.appendChild(circle);
         g.appendChild(grad);
         g.appendChild(text);
+
+        if (this.showBalanceFactors) {
+            const bfColor = bf === 0 ? '#22c55e' : (Math.abs(bf) === 1 ? '#22c55e' : (bf > 1 ? '#eab308' : '#ef4444'));
+            const bfBadge = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            bfBadge.setAttribute('cx', r - 4);
+            bfBadge.setAttribute('cy', -r + 4);
+            bfBadge.setAttribute('r', 10);
+            bfBadge.setAttribute('fill', bfColor);
+            bfBadge.setAttribute('stroke', '#0f172a');
+            bfBadge.setAttribute('stroke-width', '1.5');
+
+            const bfText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            bfText.setAttribute('x', r - 4);
+            bfText.setAttribute('y', -r + 4);
+            bfText.setAttribute('text-anchor', 'middle');
+            bfText.setAttribute('dominant-baseline', 'central');
+            bfText.setAttribute('fill', '#ffffff');
+            bfText.setAttribute('font-size', '10');
+            bfText.setAttribute('font-weight', 'bold');
+            bfText.setAttribute('font-family', "'Inter', sans-serif");
+            bfText.textContent = bf > 0 ? `+${bf}` : bf;
+
+            g.appendChild(bfBadge);
+            g.appendChild(bfText);
+        }
 
         if (animate) {
             g.style.opacity = '0';
