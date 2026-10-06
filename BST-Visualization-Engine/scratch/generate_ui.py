@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import os
+
+HTML_CONTENT = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -186,32 +188,20 @@
                 <div class="right-panel card">
                     
                     <!-- HOME SECTION -->
-                    <section class="section home-section" id="section-home">
-                        <div class="hero-card">
-                            <h2 class="hero-title text-gradient">BST Engine Lab</h2>
-                            <p class="hero-desc">A high-performance educational lab powered by a C DSA core compiled to WebAssembly. Analyze, manipulate, and visualize trees at native speed.</p>
-
-                            <div class="quick-actions-label">Quick Actions</div>
-                            <div class="quick-actions-row">
-                                <a href="#/input" class="btn btn-primary qa-btn">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                    Create BST
-                                </a>
-                                <a href="#/bst/operations/insert" class="btn btn-secondary qa-btn">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                    Insert Node
-                                </a>
-                                <a href="#/traversals" class="btn btn-secondary qa-btn">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-                                    Traversals
-                                </a>
-                                <a href="#/analysis" class="btn btn-secondary qa-btn">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                                    Analyze Tree
-                                </a>
-                            </div>
+                    <section class="section active p-5" id="section-home">
+                        <div class="hero">
+                            <h2 class="hero-title text-gradient text-2xl font-bold mb-3">BST Engine Lab</h2>
+                            <p class="hero-desc text-sm text-muted">A high-performance educational laboratory powered by a C DSA core compiled to WebAssembly. Analyze, manipulate, and visualize trees at native speed.</p>
                         </div>
-
+                        <div class="divider my-4"></div>
+                        <h3 class="font-bold mb-3">Quick Actions</h3>
+                        <div class="grid-2-col gap-3">
+                            <a href="#/input" class="btn btn-secondary flex-1 justify-start">🌲 Create BST</a>
+                            <a href="#/bst/operations/insert" class="btn btn-secondary flex-1 justify-start">➕ Insert Node</a>
+                            <a href="#/traversals" class="btn btn-secondary flex-1 justify-start">🔄 Traversals</a>
+                            <a href="#/analysis" class="btn btn-secondary flex-1 justify-start">🔬 Analyze Tree</a>
+                        </div>
+                        
                         <!-- Extra tree info to keep app.js happy -->
                         <div style="display:none;">
                             <span id="info-leaves"></span><span id="info-internal"></span><span id="info-levels"></span>
@@ -310,70 +300,38 @@
                     <!-- TRAVERSALS SECTION -->
                     <section class="section flex-col h-full" id="section-traversal">
                         <div class="tab-header-row border-b flex">
-                            <button class="inner-tab-btn active" data-target="trav-tab-controls">Controls &amp; Output</button>
+                            <button class="inner-tab-btn active" data-target="trav-tab-controls">Controls & Output</button>
                             <button class="inner-tab-btn" data-target="trav-tab-steps">Step-by-step</button>
                         </div>
-
-                        <div class="inner-tab-content trav-controls-panel" id="trav-tab-controls">
-
-                            <!-- Section A: Traversal Type -->
-                            <div class="trav-section">
-                                <div class="trav-section-label">Traversal type</div>
-                                <div class="trav-segmented" role="group" aria-label="Traversal type">
-                                    <button class="trav-seg-btn active" id="btn-inorder" data-hint="L → Root → R">Inorder</button>
-                                    <button class="trav-seg-btn" id="btn-preorder" data-hint="Root → L → R">Preorder</button>
-                                    <button class="trav-seg-btn" id="btn-postorder" data-hint="L → R → Root">Postorder</button>
-                                </div>
-                                <div class="trav-hint" id="trav-type-hint">L → Root → R</div>
+                        
+                        <div class="inner-tab-content active p-4 grow overflow-y-auto" id="trav-tab-controls">
+                            <h4 class="font-bold text-sm mb-3">Run Traversal</h4>
+                            <div class="flex-col gap-2 mb-6">
+                                <button class="btn btn-primary w-full" id="btn-inorder">Inorder (L→Root→R)</button>
+                                <button class="btn btn-secondary w-full" id="btn-preorder">Preorder (Root→L→R)</button>
+                                <button class="btn btn-secondary w-full" id="btn-postorder">Postorder (L→R→Root)</button>
                             </div>
-
-                            <div class="trav-divider"></div>
-
-                            <!-- Section B: Playback -->
-                            <div class="trav-section">
-                                <div class="trav-section-label">Playback</div>
-                                <div class="trav-playback-bar">
-                                    <div class="trav-playback-btns">
-                                        <button class="trav-pb-btn" id="btn-trav-prev" aria-label="Step back" title="Step back">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="19,20 9,12 19,4"/><rect x="5" y="4" width="2" height="16"/></svg>
-                                        </button>
-                                        <button class="trav-pb-btn trav-pb-play" id="btn-trav-play" aria-label="Play" title="Play">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
-                                        </button>
-                                        <button class="trav-pb-btn" id="btn-trav-pause" aria-label="Pause" title="Pause">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                                        </button>
-                                        <button class="trav-pb-btn" id="btn-trav-next" aria-label="Step forward" title="Step forward">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,4 15,12 5,20"/><rect x="17" y="4" width="2" height="16"/></svg>
-                                        </button>
-                                        <button class="trav-pb-btn" id="btn-trav-reset" aria-label="Reset" title="Reset">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
-                                        </button>
-                                    </div>
-                                    <select id="trav-speed-select" class="trav-speed-sel" aria-label="Playback speed">
-                                        <option value="Slow">Slow</option>
-                                        <option value="Normal" selected>Normal</option>
-                                        <option value="Fast">Fast</option>
-                                    </select>
-                                </div>
-                                <div class="trav-progress-track" role="progressbar" aria-label="Traversal progress">
-                                    <div class="trav-progress-fill" id="trav-progress-fill"></div>
-                                </div>
+                            
+                            <div class="anim-toolbar flex gap-2 mb-6 justify-center bg-surface-hover p-2 rounded">
+                                <button class="btn btn-ghost btn-icon" id="btn-trav-prev">⏮</button>
+                                <button class="btn btn-primary btn-icon" id="btn-trav-play">▶</button>
+                                <button class="btn btn-ghost btn-icon" id="btn-trav-pause">⏸</button>
+                                <button class="btn btn-ghost btn-icon" id="btn-trav-next">⏭</button>
+                                <button class="btn btn-ghost btn-icon" id="btn-trav-reset">↺</button>
+                                <select id="trav-speed-select" class="input-base text-sm ml-2" style="height:28px; padding:0 8px;">
+                                    <option value="Slow">Slow</option>
+                                    <option value="Normal" selected>Normal</option>
+                                    <option value="Fast">Fast</option>
+                                </select>
                             </div>
-
-                            <div class="trav-divider"></div>
-
-                            <!-- Section C: Output -->
-                            <div class="trav-section trav-output-section">
-                                <div class="trav-section-label" id="trav-name">Output</div>
-                                <p class="trav-output-desc" id="trav-desc"></p>
-                                <div class="trav-output-box" id="trav-seq">
-                                    <span class="trav-output-empty">Run a traversal to see the output here.</span>
-                                </div>
+                            
+                            <div id="traversal-display">
+                                <h4 id="trav-name" class="font-bold text-indigo mb-1">Output</h4>
+                                <p id="trav-desc" class="text-xs text-muted mb-3"></p>
+                                <div id="trav-seq" class="flex flex-wrap gap-2 text-sm font-mono"></div>
                             </div>
-
                         </div>
-
+                        
                         <div class="inner-tab-content p-0 grow overflow-hidden flex-col" id="trav-tab-steps">
                             <div class="p-3 border-b bg-surface-hover">
                                 <h4 class="font-bold text-sm mb-1">Traversal Steps</h4>
@@ -490,38 +448,31 @@
 // 1. Inner Tabs logic for the Right Panel
 document.querySelectorAll('.inner-tab-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
+        // Find parent section
         const section = e.target.closest('.section');
+        // Deactivate all buttons & contents in this section
         section.querySelectorAll('.inner-tab-btn').forEach(b => b.classList.remove('active'));
         section.querySelectorAll('.inner-tab-content').forEach(c => c.classList.remove('active'));
+        // Activate clicked
         e.target.classList.add('active');
         document.getElementById(e.target.dataset.target).classList.add('active');
     });
 });
 
-// 2. Traversal segmented buttons: active state + hint text
-document.querySelectorAll('.trav-seg-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.trav-seg-btn').forEach(b => b.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-        const hint = document.getElementById('trav-type-hint');
-        if (hint) hint.textContent = e.currentTarget.dataset.hint || '';
-    });
-});
-
-// 3. Syncing Home canvas + traversal wiring
+// 2. Syncing Home canvas
 document.addEventListener('DOMContentLoaded', () => {
     function waitForApp(cb, retries = 20) {
-        if (window.app && window.bstEngine && window.BSTVisualizer) { cb(); }
+        if (window.app && window.bstEngine && window.BSTVisualizer) { cb(); } 
         else if (retries > 0) { setTimeout(() => waitForApp(cb, retries - 1), 150); }
     }
-
+    
     waitForApp(() => {
         const homeSvg = document.getElementById('bst-svg-home');
         const emptyState = document.getElementById('home-empty-state');
-        if (!homeSvg) return;
-
+        if(!homeSvg) return;
+        
         const homeViz = new BSTVisualizer('bst-svg-home');
-
+        
         function updateHomeTree() {
             const treeData = window.bstEngine.getTree();
             if (treeData && treeData.tree) {
@@ -533,28 +484,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 homeSvg.style.opacity = '0';
             }
         }
-
+        
         window.addEventListener('hashchange', () => {
             if (window.location.hash === '#/home' || window.location.hash === '') {
                 updateHomeTree();
             }
         });
         updateHomeTree();
-
+        
         document.getElementById('btn-load-sample')?.addEventListener('click', () => {
             [50, 30, 70, 20, 40, 60, 80].forEach(v => window.bstEngine.insert(v));
             updateHomeTree();
             window.app.ui._updateTreeInfo();
         });
 
-        // --- Traversal panel wiring ---
+        // Setup traversal logic on the traversal tab canvas
         const travSvg = document.getElementById('bst-svg-trav');
         if (travSvg) {
             const travViz = new BSTVisualizer('bst-svg-trav');
             const travSpeedSel = document.getElementById('trav-speed-select');
-            const travSeq = document.getElementById('trav-seq');
-            const travProgressFill = document.getElementById('trav-progress-fill');
-
+            
             document.querySelectorAll('[href="#/traversals"]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const t = window.bstEngine.getTree();
@@ -562,78 +511,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
 
-            // Render sequence as chips with → arrows
-            function renderChips(sequence, currentIdx) {
-                if (!travSeq) return;
-                if (!sequence || sequence.length === 0) {
-                    travSeq.innerHTML = '<span class="trav-output-empty">No values to display.</span>';
-                    return;
-                }
-                travSeq.innerHTML = sequence.map((val, i) => {
-                    const isLast = i === sequence.length - 1;
-                    const isCurrent = i === currentIdx;
-                    return `<span class="trav-chip${isCurrent ? ' current' : ''}" data-chip-idx="${i}">${val}</span>${isLast ? '' : '<span class="trav-chip-arrow">→</span>'}`;
-                }).join('');
-            }
-
-            function setProgress(current, total) {
-                if (travProgressFill && total > 0) {
-                    travProgressFill.style.width = `${Math.round((current / total) * 100)}%`;
-                }
-            }
-
             function runTraversal(type) {
                 const t = window.bstEngine.getTree();
                 travViz.renderTree(t.tree, false);
                 let res;
-                if (type === 'inorder') res = window.bstEngine.inorder();
-                else if (type === 'preorder') res = window.bstEngine.preorder();
-                else if (type === 'postorder') res = window.bstEngine.postorder();
-
-                // Update trav-name and trav-desc (kept for app.js compatibility)
+                if(type==='inorder') res=window.bstEngine.inorder();
+                else if(type==='preorder') res=window.bstEngine.preorder();
+                else if(type==='postorder') res=window.bstEngine.postorder();
+                
                 window.app.ui.showTraversalSequence(res.name, res.sequence, res.description);
-
-                // Initial chip render (no current)
-                renderChips(res.sequence, -1);
-                if (travProgressFill) travProgressFill.style.width = '0%';
-
+                
                 const panel = document.getElementById('trav-steps-list');
                 const msg = document.getElementById('trav-current-msg');
-                if (panel) panel.innerHTML = res.steps.map((s, i) => `<li class="p-3 text-sm border-b" style="color:var(--text-muted);" data-index="${i}"><span class="font-mono text-xs mr-2 font-bold">${i + 1}</span>${s.message}</li>`).join('');
-
+                if(panel) panel.innerHTML = res.steps.map((s,i) => `<li class="p-3 text-sm border-b" style="color:var(--text-muted);" data-index="${i}"><span class="font-mono text-xs mr-2 font-bold">${i+1}</span>${s.message}</li>`).join('');
+                
                 const anim = new AnimationEngine(travViz, {
                     highlightStep: (idx) => {
                         document.querySelectorAll('#trav-steps-list li').forEach((el, i) => {
                             el.style.color = i === idx ? 'var(--indigo)' : 'var(--text-muted)';
-                            if (i === idx) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            if (i===idx) el.scrollIntoView({behavior:'smooth', block:'nearest'});
                         });
                     },
-                    setCurrentMessage: (m) => { if (msg) msg.textContent = m; }
+                    setCurrentMessage: (m) => { if(msg) msg.textContent = m; }
                 });
                 anim.setSpeed(travSpeedSel?.value || 'Normal');
-
+                
                 let vIdx = 0;
-                const total = res.sequence ? res.sequence.length : 0;
-                anim.animateTraversal(res, (val) => {
-                    window.app.ui.highlightTraversalNode(val, vIdx);
-                    renderChips(res.sequence, vIdx);
-                    setProgress(vIdx + 1, total);
-                    vIdx++;
-                }, () => {
-                    renderChips(res.sequence, -1);
-                    setProgress(total, total);
+                anim.animateTraversal(res, (val) => { window.app.ui.highlightTraversalNode(val, vIdx++); }, () => {
                     window.app.ui.setStatus(`${res.name} complete`, 'success');
                 });
-
+                
                 document.getElementById('btn-trav-play').onclick = () => anim.resume();
                 document.getElementById('btn-trav-pause').onclick = () => anim.pause();
-                document.getElementById('btn-trav-reset').onclick = () => {
-                    anim.stop();
-                    travViz.clearHighlights();
-                    vIdx = 0;
-                    renderChips(res.sequence, -1);
-                    if (travProgressFill) travProgressFill.style.width = '0%';
-                };
+                document.getElementById('btn-trav-reset').onclick = () => { anim.stop(); travViz.clearHighlights(); vIdx=0; };
                 document.getElementById('btn-trav-prev').onclick = () => anim.stepBackward();
                 document.getElementById('btn-trav-next').onclick = () => anim.stepForward();
             }
@@ -647,4 +557,259 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+"""
 
+CSS_CONTENT = """
+:root {
+  --bg-app: #0B0F17;
+  --bg-surface: #111827;
+  --bg-surface-hover: #1f2937;
+  --bg-highlight: rgba(99, 102, 241, 0.1);
+  
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-muted: #9CA3AF;
+  
+  --indigo: #6366f1;
+  --indigo-hover: #4f46e5;
+  --teal: #14b8a6;
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --cyan: #06b6d4;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(99, 102, 241, 0.5);
+  
+  --radius: 8px;
+  --radius-lg: 12px;
+  
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  --sidebar-w: 260px;
+  --topbar-h: 60px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+/* Utilities */
+.flex { display: flex; } .flex-col { display: flex; flex-direction: column; } .grow { flex: 1; }
+.items-center { align-items: center; } .justify-between { justify-content: space-between; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.gap-2 { gap: 8px; } .gap-3 { gap: 12px; } .gap-4 { gap: 16px; } .gap-6 { gap: 24px; }
+.mt-2 { margin-top: 8px; } .mt-4 { margin-top: 16px; } .mt-6 { margin-top: 24px; }
+.mb-1 { margin-bottom: 4px; } .mb-2 { margin-bottom: 8px; } .mb-3 { margin-bottom: 12px; } .mb-4 { margin-bottom: 16px; } .mb-6 { margin-bottom: 24px; }
+.ml-2 { margin-left: 8px; } .ml-4 { margin-left: 16px; } .ml-auto { margin-left: auto; }
+.p-0 { padding: 0; } .p-2 { padding: 8px; } .p-3 { padding: 12px; } .p-4 { padding: 16px; } .p-5 { padding: 20px; }
+.border-b { border-bottom: 1px solid var(--border-light); }
+.border-r { border-right: 1px solid var(--border-light); }
+.divider { height: 1px; background: var(--border-light); }
+.my-4 { margin-top: 16px; margin-bottom: 16px; }
+.w-full { width: 100%; } .h-full { height: 100%; }
+.overflow-hidden { overflow: hidden; } .overflow-y-auto { overflow-y: auto; }
+.text-xs { font-size: 11px; } .text-sm { font-size: 13px; } .text-lg { font-size: 16px; } .text-2xl { font-size: 24px; }
+.font-bold { font-weight: 600; } .font-mono { font-family: var(--font-mono); }
+.text-muted { color: var(--text-muted); }
+.text-indigo { color: var(--indigo); } .text-teal { color: var(--teal); } .text-green { color: var(--green); }
+.text-red { color: var(--red); } .text-yellow { color: var(--yellow); } .text-blue { color: var(--blue); }
+.text-center { text-align: center; } .text-right { text-align: right; }
+.bg-app { background: var(--bg-app); } .bg-surface { background: var(--bg-surface); } .bg-surface-hover { background: var(--bg-surface-hover); }
+.bg-green { background: var(--green); } .bg-yellow { background: var(--yellow); } .bg-red { background: var(--red); }
+.rounded { border-radius: var(--radius); } .rounded-full { border-radius: 999px; }
+.w-3 { width: 12px; } .h-3 { height: 12px; }
+
+.text-gradient {
+  background: linear-gradient(90deg, var(--indigo), var(--teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Layout */
+.app-container { display: flex; width: 100%; height: 100%; }
+.sidebar {
+  width: var(--sidebar-w); background: var(--bg-surface);
+  border-right: 1px solid var(--border-light); display: flex; flex-direction: column;
+}
+.sidebar-header { padding: 24px; border-bottom: 1px solid var(--border-light); }
+.sidebar-logo { display: flex; align-items: center; gap: 12px; }
+.title-main { display: block; font-weight: 700; font-size: 16px; }
+.title-sub { display: block; font-size: 12px; color: var(--text-muted); }
+
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 16px; }
+.nav-group { margin-bottom: 24px; }
+.nav-group-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; padding-left: 8px; letter-spacing: 0.05em; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px; border-radius: var(--radius);
+  color: var(--text-secondary); text-decoration: none;
+  transition: all 0.15s ease; margin-bottom: 4px;
+}
+.nav-item:hover { background: var(--bg-surface-hover); color: var(--text-primary); }
+.nav-item.active { background: var(--bg-highlight); color: var(--indigo); font-weight: 500; }
+
+.sidebar-footer { padding: 16px; border-top: 1px solid var(--border-light); }
+.status-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.05); padding: 8px 12px;
+  border-radius: 999px; font-size: 12px;
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); }
+.status-pill.ready .status-dot { background: var(--green); }
+.status-pill.error .status-dot { background: var(--red); }
+
+.main-wrapper { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.topbar {
+  height: var(--topbar-h); border-bottom: 1px solid var(--border-light);
+  display: flex; align-items: center; justify-content: space-between; padding: 0 32px;
+}
+.page-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+
+.content-area { flex: 1; overflow-y: auto; padding: 24px 32px; position: relative; display: flex; flex-direction: column; gap: 24px; }
+
+/* ROW 1: STATS */
+.stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.stat-card {
+  background: var(--bg-surface); border: 1px solid var(--border-light);
+  padding: 16px; border-radius: var(--radius-lg); box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-bottom: 8px; }
+.stat-value { font-size: 24px; font-family: var(--font-mono); font-weight: 700; }
+
+/* ROW 2: UNIFIED WORKSPACE */
+.workspace-row { display: flex; gap: 24px; min-height: 500px; flex: 1; }
+.canvas-panel { width: 60%; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); display: flex; flex-direction: column; overflow: hidden; }
+.right-panel { width: 40%; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); display: flex; flex-direction: column; overflow: hidden; }
+
+/* Right Panel Inner Sections (Routing) */
+.section { display: none; width: 100%; height: 100%; animation: fadeIn 0.2s ease; }
+.section.active { display: flex; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Right Panel Inner Tabs (Vanilla JS) */
+.tab-header-row { display: flex; background: var(--bg-surface-hover); }
+.inner-tab-btn {
+  flex: 1; padding: 12px; background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--text-muted); font-weight: 500; font-size: 13px; cursor: pointer; transition: 0.15s;
+}
+.inner-tab-btn:hover { color: var(--text-primary); }
+.inner-tab-btn.active { color: var(--indigo); border-bottom-color: var(--indigo); }
+.inner-tab-content { display: none; }
+.inner-tab-content.active { display: flex; }
+.tab-header { padding: 16px; border-bottom: 1px solid var(--border-light); background: var(--bg-surface-hover); }
+
+/* Canvas Visibility Logic */
+.canvas-wrapper { position: relative; flex: 1; background: var(--bg-app); display: flex; }
+.canvas-wrapper svg { width: 100%; height: 100%; display: none; }
+.compare-canvases { display: none; width: 100%; height: 100%; }
+.compare-col { flex: 1; display: flex; flex-direction: column; }
+.compare-col svg { display: block; flex: 1; }
+.empty-state { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); gap: 12px; }
+
+/* Show correct canvas based on active section */
+body:has(#section-home.active) #bst-svg-home { display: block; }
+body:has(#section-input.active) #bst-svg,
+body:has(#section-ops-landing.active) #bst-svg,
+body:has(#section-operation.active) #bst-svg,
+body:has(#section-analysis.active) #bst-svg,
+body:has(#section-complexity.active) #bst-svg { display: block; }
+body:has(#section-traversal.active) #bst-svg-trav { display: block; }
+body:has(#section-balance.active) #bst-svg-balance { display: block; }
+body:has(#section-avl-compare.active) .compare-canvases { display: flex; }
+
+/* ROW 3: ARCHITECTURE */
+.arch-row { width: 100%; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); }
+.arch-pipeline { display: flex; align-items: center; justify-content: space-between; padding: 20px; flex-wrap: wrap; gap: 12px; }
+.arch-node {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border-light);
+  padding: 12px; border-radius: var(--radius); text-align: center; flex: 1; min-width: 110px;
+}
+.arch-icon { font-size: 20px; margin-bottom: 6px; }
+.arch-name { font-size: 10px; font-weight: 700; margin-bottom: 2px; letter-spacing: 0.05em; }
+.arch-desc { font-size: 10px; color: var(--text-muted); }
+.arch-arrow { color: var(--text-muted); font-size: 16px; }
+
+/* Buttons & Inputs */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 8px 16px; border-radius: var(--radius); font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+  cursor: pointer; border: none; transition: 0.15s; outline: none; text-decoration: none;
+}
+.btn-primary { background: var(--indigo); color: white; }
+.btn-primary:hover { background: var(--indigo-hover); }
+.btn-secondary { background: rgba(255,255,255,0.1); color: white; }
+.btn-secondary:hover { background: rgba(255,255,255,0.15); }
+.btn-ghost { background: transparent; color: var(--text-secondary); }
+.btn-ghost:hover { background: rgba(255,255,255,0.05); color: white; }
+.btn-danger { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+.btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-icon { padding: 6px; }
+.btn-icon-text { gap: 6px; }
+.justify-start { justify-content: flex-start; }
+.text-left { text-align: left; }
+.flex-1 { flex: 1; }
+
+.input-base {
+  background: var(--bg-app); border: 1px solid var(--border-light);
+  color: white; padding: 8px 12px; border-radius: var(--radius);
+  font-family: var(--font-sans); font-size: 13px;
+}
+.input-base:focus { border-color: var(--indigo); }
+.input-area {
+  background: var(--bg-app); border: 1px solid var(--border-light);
+  color: white; padding: 12px; border-radius: var(--radius);
+  font-family: var(--font-mono); font-size: 13px; resize: vertical;
+}
+
+/* Grids */
+.grid-2-col { display: grid; grid-template-columns: 1fr 1fr; }
+
+/* Visualizer Overrides */
+circle.node-circle { stroke: rgba(255,255,255,0.2) !important; stroke-width: 2px !important; }
+text.node-text { font-family: var(--font-mono) !important; font-size: 14px !important; fill: white !important; font-weight: 500 !important; }
+line.edge-line { stroke: rgba(255,255,255,0.15) !important; stroke-width: 2px !important; }
+.node-highlighted circle { fill: var(--indigo) !important; stroke: var(--indigo-hover) !important; }
+.node-traversed circle { fill: var(--teal) !important; stroke: #0f766e !important; }
+
+/* Toast */
+.status-message {
+  position: absolute; top: 16px; right: 32px; z-index: 100;
+  padding: 12px 20px; border-radius: var(--radius); font-size: 13px;
+  background: var(--bg-surface); border: 1px solid var(--border-light);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: 0.3s; transform: translateY(-10px);
+}
+.status-message.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.status-message.success { border-left: 4px solid var(--green); }
+.status-message.error { border-left: 4px solid var(--red); }
+.status-message.info { border-left: 4px solid var(--blue); }
+
+/* Animation Controls Overrides */
+.anim-toolbar select { padding: 4px 8px; height: 32px; border-radius: var(--radius); background: rgba(255,255,255,0.05); }
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .workspace-row { flex-direction: column; }
+  .canvas-panel, .right-panel { width: 100%; min-height: 400px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+"""
+
+with open("frontend/index.html", "w", encoding="utf-8") as f:
+    f.write(HTML_CONTENT)
+
+with open("frontend/styles.css", "w", encoding="utf-8") as f:
+    f.write(CSS_CONTENT)
+
+print("Files generated successfully.")
